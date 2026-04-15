@@ -1,0 +1,5 @@
+creation_rules:
+  - path_regex: security/.*\.sops\.ya?ml
+    key_groups:
+    - age:
+      - age1placeholder1234567890abcdefghijklmnopqrstuvwxyz1234567890
