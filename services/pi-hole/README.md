@@ -1,0 +1,19 @@
+# 🕳️ Pi-hole: Local DNS & Network Protection
+
+> [!NOTE]  
+> Pi-hole runs as an unprivileged LXC container (ID: 101) directly on the Proxmox host. It serves as the primary, network-wide DNS resolver and ad-blocker for the internal 192.168.1.x subnet.
+
+## Deployment Strategy
+
+The container was provisioned utilizing the Proxmox VE Helper-Scripts to ensure a lean, optimized Debian environment without the overhead of a full Virtual Machine.
+
+- **Container Type:** LXC (Unprivileged)
+- **Compute:** 1 Core
+- **Memory:** 512MB RAM
+- **Network:** Static IP assigned as 192.168.1.101 on vmbr0
+
+## Network Role & Traffic Flow
+
+- **Upstream Resolution:** Permitted DNS queries are securely forwarded to Cloudflare (1.1.1.1) and Google (8.8.8.8).
+- **DHCP Integration:** The primary hardware gateway (ZTE Router at 192.168.1.1) has its DHCP settings configured to broadcast 192.168.1.101 as the primary DNS server to all connected LAN clients.
+- **Local DNS Records:** This instance will act as the authoritative resolver for internal lab routing (e.g., mapping `.local` or custom domain names directly to internal container IPs).
