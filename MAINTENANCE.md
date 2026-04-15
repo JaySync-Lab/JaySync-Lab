@@ -1,30 +1,30 @@
-# Maintenance & Operations
+# 📖 The JaySync-Lab Rulebook (Repository Legend)
 
-## The "6-Month Rule"
+## The 6-Month Rule
 
-> [!IMPORTANT]  
-> **6-Month Rule:** Wait at least 6 months before performing major version upgrades on core infrastructure (e.g., Proxmox VE). This delay ensures community validation and reduces the risk of zero-day bugs affecting lab stability.
+> [!NOTE]  
+> This repository is designed to be self-explanatory. If the author returns after 6 months of inactivity, this document serves as the absolute source of truth for where things belong, how to update them, and the rules of the environment.
 
-## IP Assignment Table
+## Directory Legend
 
-| Service / Node | IP Address | Notes |
-| :--- | :--- | :--- |
-| **Proxmox Host** | `.100` | Physical Server |
-| **Pi-hole** | `.101` | LXC |
-| **Uptime Kuma** | `.102` | LXC |
-| **Home Assistant** | `.11` | VM |
+- `/infrastructure/` -> Physical & Host OS (Hardware specs, Proxmox host configs, storage).
+- `/networking/` -> Traffic & DNS (Pi-hole, Tailscale, IP reservations).
+- `/services/` -> The Workloads (LXC/VM folders like uptime-kuma/).
+- `/templates/` -> UI & Styling (CSS, HTML emails).
+- `/security/` -> SOPS/Age encryption rules and public keys.
 
-## Update Procedure
+## IP Allocation Map
 
-Updating the infrastructure follows different guidelines depending on whether it's the host or a container:
+| Device/Service   | IP Address    | Type       | Notes                       |
+|------------------|---------------|------------|-----------------------------|
+| ZTE Router       | 192.168.1.1   | Hardware   | Gateway / DHCP Server       |
+| Proxmox Host     | 192.168.1.100 | Bare Metal | Management UI (Port 8006)   |
+| Pi-hole (DNS)    | 192.168.1.101 | LXC (101)  | Primary DNS                 |
+| Uptime Kuma      | 192.168.1.102 | LXC (102)  | The "Watchman" (Port 3001)  |
+| Home Assistant   | 192.168.1.11  | VM (103)   | Smart Home OS (Port 8123)   |
 
-### Proxmox Host
+## Standard Update Procedures
 
-Perform updates using standard package management tools:
-```bash
-apt update && apt full-upgrade -y
-```
-
-### LXC Containers
-
-For LXC containers (e.g., Pi-hole, Uptime Kuma), use the appropriate **community script updates** rather than native `apt` upgrades. This ensures complex service configurations and dependencies remain intact.
+- **Proxmox Host**: Uses `apt update && apt dist-upgrade`.
+- **LXCs**: Uses standard Debian `apt`.
+- **HAOS**: Uses the UI Supervisor.
