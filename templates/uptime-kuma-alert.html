@@ -1,0 +1,17 @@
+<div style="font-family: sans-serif; border: 1px solid #eee; padding: 20px; border-radius: 10px; max-width: 500px;">
+  <h2 style="color: {% if status == 'up' %}#2ecc71{% else %}#e74c3c{% endif %};">
+    {% if status == 'up' %}✅ System Restored{% else %}🚨 Service Alert{% endif %}
+  </h2>
+  <hr style="border: 0; border-top: 1px solid #eee;">
+  <p><strong>Service:</strong> <span style="font-size: 1.1em;">{{ name }}</span></p>
+  <p><strong>Status:</strong> <span style="color: {% if status == 'up' %}#2ecc71{% else %}#e74c3c{% endif %}; font-weight: bold;">{{ status | upcase }}</span></p>
+  <p><strong>Message:</strong> {{ msg }}</p>
+  <p><strong>Target:</strong> <code>{{ hostnameOrURL }}</code></p>
+  <br>
+  <div style="text-align: center;">
+    <a href="http://192.168.1.102:3001" style="background: #3498db; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; display: inline-block;">Open JaySync-Lab Dashboard</a>
+  </div>
+  <p style="font-size: 0.8em; color: #888; margin-top: 25px; text-align: center; border-top: 1px solid #eee; padding-top: 10px;">
+    Sent by JaySync-Lab Automated Monitoring
+  </p>
+</div>
