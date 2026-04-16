@@ -1,35 +1,23 @@
-# Uptime Kuma
+# ⏱️ Uptime Kuma: Infrastructure Observability
 
-Uptime Kuma monitors the status and latency of the services hosted at JaySync-Lab.
+> [!NOTE]  
+> Uptime Kuma runs as an unprivileged LXC container (ID: 102) on the Proxmox host. It acts as the central 'Watchman', polling core services every 60 seconds and dispatching automated HTML alerts upon failure.
 
-## Custom Notification Logic
+## Deployment & Scope
 
-> [!NOTE]
-> Tailscale DNS is deliberately bypassed for Uptime Kuma notifications. This ensures that even if Tailscale routing goes down, critical alerts will still successfully reach their destinations.
+**Container Specs:**
+- **Compute:** 1 Core
+- **Memory:** 1024MB RAM
+- **Network:** 192.168.1.102
 
-## Custom UI
+**Monitored Targets:**
+- **Hardware/Gateway:** ZTE Router (192.168.1.1)
+- **External DNS:** Cloudflare (1.1.1.1) to verify ISP connectivity.
+- **Hypervisor:** Proxmox Host GUI (https://192.168.1.100:8006).
+- **Internal DNS:** Pi-hole (192.168.1.101 resolving local queries).
 
-We utilize custom UI styling to align Uptime Kuma's status page with the lab's brand.
+## Alerting Strategy & UI Customization
 
-### Example CSS (`templates/uptime-kuma.css`)
+Standard plaintext emails were insufficient. A dedicated system Gmail account was configured using App Passwords to handle outbound alerts securely.
 
-```css
-/* Custom Uptime Kuma Status Page Styles */
-body {
-    background-color: #121212 !important;
-    color: #e0e0e0;
-}
-
-.item-name {
-    font-weight: bold;
-}
-```
-
-### Example HTML Email Template (`templates/email-template.html`)
-
-```html
-<div class="custom-alert">
-    <h2>JaySync-Lab Alert</h2>
-    <p>A monitored service has experienced a state change.</p>
-</div>
-```
+To provide a refined experience, custom Liquid templating (`{% if status == 'up' %}`) and inline CSS were used to create responsive, professional alert cards. The raw code for the email body and the status page CSS are strictly stored in the `/templates` directory of this repository for easy automation.
