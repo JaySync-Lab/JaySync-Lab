@@ -7,6 +7,15 @@ Central command for the smart home environment.
 > [!IMPORTANT]
 > **VM over Docker Decision:** We opted for a full Virtual Machine deployment (HAOS) rather than a Docker container. This allows us to leverage Supervisor for simple add-on management and robust snapshot-based backups without needing complex standalone container orchestration.
 
+**VM Configuration (ID: 103):**
+- **Machine Type:** Q35 with OVMF (UEFI) BIOS
+- **CPU:** 2 Cores (x86-64-v2-AES), 1 Socket
+- **Memory:** 2048MB RAM
+- **Boot Disk:** 32GB SCSI (virtio-scsi-single, iothread enabled)
+- **EFI Disk:** 4MB on `local-lvm`
+- **Network:** VirtIO NIC on vmbr0, firewall enabled
+- **Autostart:** `onboot=1`
+
 ## EZVIZ RTSP Integration Logic
 
 To securely integrate EZVIZ camera feeds directly into Home Assistant:
