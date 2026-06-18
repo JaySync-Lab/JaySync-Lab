@@ -41,5 +41,5 @@
 | `local-lvm` | LVM-Thin | ~320GB | VM/CT disk images (thin provisioned) | *(managed by PVE)* |
 | `vault` | Directory (ext4) | ~916GB | Images, rootdirs, backups, ISOs, snippets, templates | `/mnt/pve/vault` |
 
-- **SSD (256GB)**: Split into `local` (ext4) for ISOs/templates and `local-lvm` (LVM-Thin) for running Virtual Disks. Thin provisioning prevents bottlenecks.
+- **SSD (512GB)**: Split into `local` (ext4) for ISOs/templates and `local-lvm` (LVM-Thin) for running Virtual Disks. Thin provisioning prevents bottlenecks.
 - **HDD (1TB)**: Mounted as `vault` (Directory) at `/mnt/pve/vault`. Configured as a universal store accepting all content types. Used for media data, Proxmox snapshots, and container bind-mounts.
