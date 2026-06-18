@@ -12,7 +12,7 @@
 | **RAM** | 16GB DDR4 | Upgraded from original 8GB. Allocated across LXCs and VMs. |
 | **GPU** | Intel HD Graphics 530 (i915) | Onboard IGD. Available for passthrough to containers via `/dev/dri`. |
 | **NIC** | Realtek RTL8111/8168 Gigabit (r8169) | Single GbE port bridged to `vmbr0`. |
-| **Storage 1** | 256GB SSD | "The Fast Tier." Hosts Proxmox OS, LXC roots, VM boot drives. |
+| **Storage 1** | 512GB SSD | "The Fast Tier." Hosts Proxmox OS, LXC roots, VM boot drives. |
 | **Storage 2** | 1TB Toshiba HDD | "The Vault." High-capacity storage for backups, media, and data. |
 
 ## Pre-Installation (BIOS Configuration)
