@@ -1,0 +1,98 @@
+hardware:
+  - id: zte-router
+    name: "ZTE Router"
+    ip: "192.168.1.1"
+    type: hardware
+    role: "Gateway / DHCP Server"
+    vmid: null
+
+  - id: proxmox-host
+    name: "Proxmox Host"
+    ip: "192.168.1.100"
+    type: bare-metal
+    role: "Hypervisor — Management UI (port 8006)"
+    vmid: null
+    docs: infrastructure/hardware.md
+
+nodes:
+  - vmid: 100
+    name: pi-hole
+    type: lxc
+    ip: "192.168.1.101"
+    role: "Local DNS & Network Protection"
+    status_name: "Pi-hole"
+    docs: services/pi-hole/README.md
+    band: core-network
+
+  - vmid: 101
+    name: uptime-kuma
+    type: lxc
+    ip: "192.168.1.102"
+    role: "Infrastructure Observability (The Watchman)"
+    status_name: "Uptime Kuma"
+    docs: services/uptime-kuma/README.md
+    band: core-network
+
+  - vmid: 103
+    name: home-assistant
+    type: vm
+    ip: "192.168.1.11"
+    role: "Smart Home OS (HAOS)"
+    status_name: "Home Assistant"
+    docs: services/home-assistant/README.md
+    band: specialized-controllers
+
+  - vmid: 104
+    name: media-stack
+    type: lxc
+    ip: "192.168.1.104"
+    role: "Docker-based streaming stack (GPU passthrough)"
+    status_name: "Media Stack"
+    docs: services/media-stack/README.md
+    band: media-streaming
+
+  - vmid: 105
+    name: production-documentation-engine
+    type: lxc
+    ip: "192.168.1.105"
+    role: "Documentation platform"
+    status_name: "Docs Engine"
+    docs: services/production-documentation-engine/README.md
+    band: automation-utilities
+    created: "2026-06-17"
+
+overlay:
+  - id: tailscale-proxmox
+    name: "Tailscale (Proxmox)"
+    ip: "100.87.172.121"
+    type: overlay
+    role: "Remote access mesh VPN"
+    vmid: null
+    docs: networking/tailscale-routing.md
+
+vmid_bands:
+  - id: core-network
+    range: "100-119"
+    label: "Core Network Layer"
+    purpose: "DNS, reverse proxies, VPN gateways, core firewalls"
+    isolation: lxc
+  - id: automation-utilities
+    range: "120-139"
+    label: "Automation & Utilities"
+    purpose: "Home Assistant DB backends, analytics nodes, cron pipelines"
+    isolation: lxc
+  - id: specialized-controllers
+    range: "140-159"
+    label: "Specialized Core Controllers"
+    purpose: "Primary home controllers requiring kernel isolation"
+    isolation: qemu-vm
+  - id: media-streaming
+    range: "160-179"
+    label: "Media & Streaming Stacks"
+    purpose: "Video streaming servers, media indexers, transcoder controllers"
+    isolation: lxc-gpu-passthrough
+  - id: sandboxes-testing
+    range: "180-199"
+    label: "Sandboxes & Testing"
+    purpose: "Local AI playgrounds, testing sandboxes, experimental environments"
+    isolation: lxc-or-vm
