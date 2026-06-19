@@ -1,14 +1,21 @@
 # ⏱️ Uptime Kuma: Infrastructure Observability
 
 > [!NOTE]  
-> Uptime Kuma runs as an unprivileged LXC container (ID: 102) on the Proxmox host. It acts as the central 'Watchman', polling core services every 60 seconds and dispatching automated HTML alerts upon failure.
+> Uptime Kuma runs as an unprivileged LXC container (ID: 101) on the Proxmox host. It acts as the central 'Watchman', polling core services every 60 seconds and dispatching automated HTML alerts upon failure.
 
 ## Deployment & Scope
 
 **Container Specs:**
+- **Container ID:** 101
 - **Compute:** 1 Core
-- **Memory:** 1024MB RAM
-- **Network:** 192.168.1.102
+- **Memory:** 512MB RAM
+- **Swap:** 512MB
+- **Root Disk:** 4GB on `local-lvm`
+- **Features:** `nesting=1,keyctl=1`
+- **Network:** 192.168.1.102 on vmbr0
+- **Timezone:** Asia/Colombo
+- **Tags:** `analytics`, `community-script`, `monitoring`
+- **Autostart:** `onboot=1`
 
 **Monitored Targets:**
 - **Hardware/Gateway:** ZTE Router (192.168.1.1)

@@ -1,2 +1,5 @@
 # SOPS Age Key
 age-key.txt
+
+# Graphify knowledge graph output
+graphify-out/
