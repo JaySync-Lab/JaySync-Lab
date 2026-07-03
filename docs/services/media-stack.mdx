@@ -1,0 +1,63 @@
+---
+title: "Media Stack"
+description: "GPU-accelerated Docker media streaming stack, LXC 104."
+status: published
+icon: "Film"
+---
+
+> The media-stack runs as an unprivileged LXC container (ID: 104) on the
+> Proxmox host. It hosts a Docker-based media services stack with
+> GPU-accelerated hardware transcoding via Intel HD Graphics 530
+> passthrough.
+
+## Deployment Strategy
+
+A dedicated LXC container running Docker was chosen over individual VMs per
+service to consolidate resource usage while maintaining service isolation
+through Docker Compose orchestration.
+
+**Container Specs:**
+- **Container ID:** 104
+- **Compute:** 2 Cores
+- **Memory:** 2048MB RAM
+- **Swap:** 2048MB
+- **Root Disk:** 35GB on `local-lvm`
+- **Features:** `nesting=1` (required for Docker-in-LXC)
+- **Network:** 192.168.1.104 on vmbr0
+- **Autostart:** `onboot=1`
+
+## GPU Passthrough (Hardware Transcoding)
+
+> The Intel HD Graphics 530 iGPU is passed through from the Proxmox host
+> into this container to enable hardware-accelerated video transcoding
+> (Quick Sync Video). This avoids CPU-bound transcoding bottlenecks.
+
+**LXC Configuration:**
+```
+lxc.cgroup2.devices.allow: c 226:0 rwm
+lxc.cgroup2.devices.allow: c 226:128 rwm
+lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
+```
+
+Device `226:0` is the DRM render node and `226:128` is the card node,
+giving the container full access to the GPU for media transcoding.
+
+## Storage Architecture
+
+The Vault HDD (1TB) is bind-mounted into the container for media storage:
+
+```
+mp0: /mnt/pve/vault/data,mp=/data
+```
+
+This separates the media library (large, slow-tier storage) from the
+application data (fast SSD-backed root disk), ensuring the container root
+doesn't fill up with media files.
+
+## Docker Services
+
+The container runs multiple Docker services via overlay networking. A
+total of 6 containers are active.
+
+> To inspect the running services:
+> `pct exec 104 -- docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"`

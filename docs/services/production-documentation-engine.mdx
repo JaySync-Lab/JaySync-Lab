@@ -1,0 +1,36 @@
+---
+title: "Documentation Engine"
+description: "Web-accessible documentation platform, LXC 105."
+status: published
+icon: "FileText"
+---
+
+> The production-documentation-engine runs as an unprivileged LXC container
+> (ID: 105) on the Proxmox host. It serves as the lab's dedicated
+> documentation platform, providing a web-accessible interface for
+> maintaining project and infrastructure documentation.
+
+## Deployment Strategy
+
+A dedicated high-resource LXC was provisioned to host the documentation
+tooling independently from other lab services, ensuring documentation
+availability is not coupled to other workloads.
+
+**Container Specs:**
+- **Container ID:** 105
+- **Compute:** 4 Cores
+- **Memory:** 2048MB RAM
+- **Swap:** 2048MB
+- **Root Disk:** 35GB on `local-lvm`
+- **Features:** `nesting=1`
+- **Network:** 192.168.1.105 on vmbr0
+- **DNS:** Explicitly set to 192.168.1.1 (gateway resolver)
+- **Autostart:** `onboot=1`
+- **Created:** 2026-06-17
+
+## Network Configuration
+
+> Unlike other containers which inherit DNS from the host, this container
+> has its nameserver explicitly set to `192.168.1.1` (the ZTE Router /
+> gateway). This ensures DNS resolution is independent of the Pi-hole
+> container, providing resilience if the internal DNS service is down.

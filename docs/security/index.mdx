@@ -1,0 +1,21 @@
+---
+title: "Secret Management"
+description: "SOPS + Age encryption approach used across this repository."
+status: published
+icon: "Lock"
+---
+
+> This repository uses Mozilla SOPS and Age for GitOps-style secret
+> management. No plaintext passwords or API keys are ever committed to
+> version control.
+
+## How it Works
+
+Files ending in `.enc.yaml` are encrypted. The values are scrambled, but the
+YAML keys remain readable, making code review easy without exposing
+sensitive data.
+
+Encrypted secret files live under [`/secrets`](https://github.com/JaySync-Lab/JaySync-Lab/tree/main/secrets)
+at the repository root — structurally separate from `/docs`, so the
+documentation site's build process never has a path to them, encrypted or
+not.
