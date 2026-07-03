@@ -1,0 +1,4 @@
+{
+  "title": "Services",
+  "pages": ["pi-hole", "uptime-kuma", "home-assistant", "media-stack", "production-documentation-engine"]
+}

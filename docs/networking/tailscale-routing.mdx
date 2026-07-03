@@ -1,0 +1,43 @@
+---
+title: "Tailscale Routing"
+description: "Bare-metal VPN placement and the MagicDNS conflict fix."
+status: published
+icon: "Network"
+---
+
+## Architectural Placement
+
+> Tailscale is NOT deployed inside an LXC or VM. It is installed directly
+> on the bare-metal Proxmox hypervisor (Debian OS).
+
+**Engineering Rationale:**
+- **Management Access:** Guarantees remote access to the Proxmox Web GUI
+  (Port 8006) even if the internal virtual network fails.
+- **Subnet Router Capability:** Acts as a gateway to expose the internal
+  192.168.1.x subnet to authenticated remote devices.
+
+## The MagicDNS Conflict
+
+> By default, Tailscale's MagicDNS overrides the host's `/etc/resolv.conf`
+> to use `100.100.100.100`. On a bare-metal hypervisor without a dedicated
+> DNS manager like `systemd-resolved`, this breaks outbound domain
+> resolution for the host, causing critical operations (like fetching
+> Proxmox community scripts) to fail with "Temporary failure in name
+> resolution".
+
+## The Permanent Engineering Fix
+
+To force Tailscale to relinquish DNS control while maintaining the VPN mesh
+network, the following commands were executed on the Proxmox Node Shell:
+
+```bash
+# 1. Instruct Tailscale to stop modifying host DNS
+tailscale set --accept-dns=false
+
+# 2. Hardcode reliable upstream DNS for the Proxmox host
+echo -e "nameserver 1.1.1.1\nnameserver 8.8.8.8" > /etc/resolv.conf
+```
+
+**Conclusion:**
+This fix ensures the hypervisor can reliably reach the internet and
+download packages independently of the lab's internal DNS containers.

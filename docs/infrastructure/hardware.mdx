@@ -1,7 +1,14 @@
-# 🖥️ System Architecture & Hardware Configuration
+---
+title: "Hardware"
+description: "Physical hardware specs, BIOS configuration, and storage tiering."
+status: published
+icon: "Cpu"
+---
 
-> [!IMPORTANT]  
-> **Engineering Objective:** Establish a stable, hypervisor-driven home lab using repurposed enterprise hardware. The host must support hardware virtualization, efficient containerization, and separate fast/slow storage tiers.
+> **Engineering Objective:** Establish a stable, hypervisor-driven home lab
+> using repurposed enterprise hardware. The host must support hardware
+> virtualization, efficient containerization, and separate fast/slow storage
+> tiers.
 
 ## Hardware Specifications
 
@@ -41,5 +48,9 @@
 | `local-lvm` | LVM-Thin | ~320GB | VM/CT disk images (thin provisioned) | *(managed by PVE)* |
 | `vault` | Directory (ext4) | ~916GB | Images, rootdirs, backups, ISOs, snippets, templates | `/mnt/pve/vault` |
 
-- **SSD (512GB)**: Split into `local` (ext4) for ISOs/templates and `local-lvm` (LVM-Thin) for running Virtual Disks. Thin provisioning prevents bottlenecks.
-- **HDD (1TB)**: Mounted as `vault` (Directory) at `/mnt/pve/vault`. Configured as a universal store accepting all content types. Used for media data, Proxmox snapshots, and container bind-mounts.
+- **SSD (512GB)**: Split into `local` (ext4) for ISOs/templates and
+  `local-lvm` (LVM-Thin) for running virtual disks. Thin provisioning
+  prevents bottlenecks.
+- **HDD (1TB)**: Mounted as `vault` (Directory) at `/mnt/pve/vault`.
+  Configured as a universal store accepting all content types. Used for
+  media data, Proxmox snapshots, and container bind-mounts.

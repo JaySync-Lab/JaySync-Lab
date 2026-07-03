@@ -1,0 +1,42 @@
+---
+title: "Uptime Kuma"
+description: "Infrastructure observability and alerting, LXC 101."
+status: published
+icon: "Activity"
+---
+
+> Uptime Kuma runs as an unprivileged LXC container (ID: 101) on the
+> Proxmox host. It acts as the central "Watchman", polling core services
+> every 60 seconds and dispatching automated HTML alerts upon failure.
+
+## Deployment & Scope
+
+**Container Specs:**
+- **Container ID:** 101
+- **Compute:** 1 Core
+- **Memory:** 512MB RAM
+- **Swap:** 512MB
+- **Root Disk:** 4GB on `local-lvm`
+- **Features:** `nesting=1,keyctl=1`
+- **Network:** 192.168.1.102 on vmbr0
+- **Timezone:** Asia/Colombo
+- **Tags:** `analytics`, `community-script`, `monitoring`
+- **Autostart:** `onboot=1`
+
+**Monitored Targets:**
+- **Hardware/Gateway:** ZTE Router (192.168.1.1)
+- **External DNS:** Cloudflare (1.1.1.1) to verify ISP connectivity.
+- **Hypervisor:** Proxmox Host GUI (https://192.168.1.100:8006).
+- **Internal DNS:** Pi-hole (192.168.1.101 resolving local queries).
+
+## Alerting Strategy & UI Customization
+
+Standard plaintext emails were insufficient. A dedicated system Gmail
+account was configured using App Passwords to handle outbound alerts
+securely.
+
+To provide a refined experience, custom Liquid templating
+(`{% if status == 'up' %}`) and inline CSS were used to create responsive,
+professional alert cards. The raw code for the email body and the status
+page CSS are strictly stored in the `/templates` directory of the
+repository for easy automation.
