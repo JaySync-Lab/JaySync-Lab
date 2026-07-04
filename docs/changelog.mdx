@@ -10,6 +10,37 @@ technical version of this log is also kept at
 [`CHANGELOG.md`](https://github.com/JaySync-Lab/JaySync-Lab/blob/main/CHANGELOG.md)
 in the repository root — this page is the published, reader-facing copy.
 
+## 2026-07-03
+
+- Migrated all lab documentation into a structured `docs/` folder with
+  consistent metadata (title, description, publish status, icon) so every
+  page renders correctly and navigates predictably on the site
+- Added `RULEBOOK.md`, a how-to guide for writing and publishing new
+  documentation pages
+- Moved encrypted credentials into their own dedicated `secrets/` folder,
+  fully separated from anything the documentation site's build process can
+  reach
+- Added an automated check that validates every documentation page before
+  it's allowed to reach the site
+- Found and fixed a gap where a failed notification to the site could go
+  unnoticed — that check now fails loudly instead of silently succeeding
+- The site now automatically pulls fresh documentation, hides unfinished
+  (draft) pages, and only goes live if the site builds successfully — a
+  broken docs change can never reach the live site
+- Confirmed the entire publishing pipeline end-to-end: a documentation edit
+  went from this repository to the live site automatically, with no manual
+  steps in between
+- This repository and the site repository were moved under the new
+  `JaySync-Lab` GitHub organization, consolidating everything under one home
+
+## 2026-07-02
+
+- The `JaySync-Lab` GitHub organization was created to bring all lab-related
+  repositories under one roof
+- A new `jaysync-lab-playground` repository was created as a sandbox for
+  testing infrastructure changes safely before they touch production — see
+  that repository's own implementation log for details
+
 ## 2026-06-19
 
 - Added `CHANGELOG.md` to track all notable lab changes going forward

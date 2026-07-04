@@ -2,6 +2,24 @@
 
 All notable changes to the JaySync-Lab configuration and documentation are recorded here. Dates reflect when changes were committed to the repository.
 
+## 2026-07-03
+
+- Restructured `/docs` into a Fumadocs-compatible tree: converted all flat `.md` files to `.mdx` with a four-field frontmatter schema (`title`, `description`, `status`, `icon`) and a `meta.json` per folder for navigation
+- Added `RULEBOOK.md` (docs-authoring guide) to the repo root
+- Isolated secrets: moved `security/lab-credentials.enc.yaml` to `secrets/lab-credentials.enc.yaml` via `git mv` (history preserved); no change needed to `.sops.yaml` since its `path_regex` matches by filename suffix, not folder
+- Added `scripts/validate-docs.mjs` and a GitHub Actions workflow (`validate-and-dispatch.yml`) that validates frontmatter/`meta.json` on every push to `docs/**` before notifying `jaysync-lab-site`
+- Removed the superseded flat-file docs (`infrastructure/`, `networking/`, `security/`, `services/` READMEs) and a stale planning artifact (`docs/superpowers/`) left over from an earlier Claude Code session
+- **Drift found and fixed — dispatch step:** the `curl` call notifying `jaysync-lab-site` reported success even on HTTP error responses, since plain `curl` doesn't treat 4xx/5xx as a failure on its own; added the `-f` flag so the step now fails the workflow correctly when the dispatch actually fails
+- Added `workflow_dispatch` to `validate-and-dispatch.yml` so the workflow can be triggered manually from the Actions tab for testing
+- `jaysync-lab-site`: added a `rebuild-from-docs.yml` workflow (triggered by the `docs-updated` repository_dispatch event) and a `filter-drafts.mjs` script — it pulls `docs/` from this repo, strips any page marked `status: draft`, runs a pre-flight `npm run build`, and only commits+pushes the synced content if that build succeeds, so the site's existing Vercel auto-deploy can never pick up a broken build
+- Verified the full pipeline end-to-end: pushed a real docs edit to this repo's `main`, `jaysync-lab-site` received the dispatch, pulled/filtered/built successfully, committed, and deployed — zero manual steps in between
+- The `JaySync-Lab` and `jaysync-lab-site` repositories were transferred into the new `JaySync-Lab` GitHub organization, and `jaysync-lab-site`'s default branch was renamed from `master` to `main`
+
+## 2026-07-02
+
+- Created the `JaySync-Lab` GitHub organization, including a `.github` profile repository (exact creation timestamp isn't git-recorded — this is an account-level action, not a commit; dated from the earliest repo activity confirmed inside the org)
+- Created `jaysync-lab-playground`, a sandboxed staging repo for testing phased infrastructure changes before they touch production — see that repo's own `implementation-log.md` for phase-by-phase detail (drift notes, verification steps, etc.)
+
 ## 2026-06-19
 
 - Added `CHANGELOG.md` to track all notable lab changes going forward
