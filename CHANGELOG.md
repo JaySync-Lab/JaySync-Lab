@@ -2,6 +2,21 @@
 
 All notable changes to the JaySync-Lab configuration and documentation are recorded here. Dates reflect when changes were committed to the repository.
 
+## 2026-07-07
+
+- **Playground Phase 3 (session controller) complete** — full write-up in `jaysync-lab-playground`'s `implementation-log.md`. Summary:
+  - CT 105 repurposed from the old, unused docs-engine experiment into `playground-controller`: an unprivileged LXC, dual-homed (`vmbr0` for LAN, `vmbr_sandbox` for reaching session clones), running a FastAPI app (`POST /sessions`, `WS /ws/{session_id}`) plus a background reaper, deployed as a systemd service with `Restart=on-failure`
+  - Proxmox access scoped down: a dedicated `playground-sandbox` resource pool, a purpose-built `playground-ctrl@pve` user with a privilege-separated API token, and a `PlaygroundCtrlRole` role — no `root@pam` or raw shell access involved
+  - Golden template updated: CT 180 was found to have ttyd bound to `localhost` only (a correct choice in Phase 2, before the controller's cross-network design existed, but wrong now) — retemplated via a temporary CT 183 to fix the binding, then restored back to VMID 180 once the fix was fully proven against the real host, keeping the original template numbering convention
+  - Step 3.8's full end-to-end test against the real host found and fixed three real bugs: a WebSocket relay crash on ttyd's own text-frame handshake, a relay that silently never tore down a session on disconnect (`asyncio.gather()` waiting on both relay directions instead of tearing down on the first to finish), and an LXC `nesting=1` regression that hung every session's shell via a failed `systemd-logind`
+  - All six Step 3.8 scenarios (basic session, disallowed commands, timeout cleanup, early disconnect, concurrency cap, zero leftovers) passing against the real host
+- Marked the old `production-documentation-engine` docs page as draft and delisted it from the services nav, since CT 105 no longer runs that role — now superseded by a real `playground-controller` page (see below)
+
+## 2026-07-06
+
+- Proxmox host came back online after an unplanned ~3.5-day offline period; root cause undetermined (no crash log found in the prior boot's journal — most consistent with a power event, not a kernel panic or planned shutdown)
+- Took a full pre-work backup before resuming any infrastructure changes: `vzdump` of all 5 guests plus a host-config tarball, verified complete before proceeding
+
 ## 2026-07-03
 
 - Restructured `/docs` into a Fumadocs-compatible tree: converted all flat `.md` files to `.mdx` with a four-field frontmatter schema (`title`, `description`, `status`, `icon`) and a `meta.json` per folder for navigation

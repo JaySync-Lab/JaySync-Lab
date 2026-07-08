@@ -10,6 +10,63 @@ technical version of this log is also kept at
 [`CHANGELOG.md`](https://github.com/JaySync-Lab/JaySync-Lab/blob/main/CHANGELOG.md)
 in the repository root — this page is the published, reader-facing copy.
 
+## 2026-07-07
+
+The playground's session controller — the piece that actually spins up an
+isolated terminal for a visitor and tears it down again — is live and
+tested against the real hardware.
+
+The container that now runs it (CT 105) used to host an old, unused
+documentation experiment that was never wired into anything real. That's
+been retired, and CT 105 has been rebuilt as the playground controller:
+it sits on both the lab's normal network and the playground's own isolated
+network segment, and it's the *only* thing that bridges the two — every
+session's traffic passes through this one deliberate chokepoint, and
+nowhere else.
+
+Getting there took a proper security pass first: rather than give the
+controller broad access to the Proxmox host, it was issued a narrowly
+scoped API token — allowed to clone and manage playground sessions
+specifically, nothing more.
+
+The most interesting part of getting this working was the testing itself.
+A full pass through six real-world scenarios — starting a session,
+blocking commands that shouldn't be available, letting a session time out,
+closing the browser tab early, hitting the concurrency limit, and checking
+nothing was left behind — turned up three real bugs that only showed up
+once real terminal traffic was flowing:
+
+- The very first handshake a real terminal client sends broke the relay
+  immediately, so no one could actually get a working terminal
+- Closing the browser tab didn't reliably end the session on the backend
+  the way it was supposed to — the cleanup logic wasn't watching for that
+  case
+- A container-configuration setting that had already been fixed once
+  elsewhere quietly resurfaced in the freshly rebuilt template, which
+  froze every new session's shell before a visitor could type anything
+
+All three are fixed, and all six scenarios now pass end-to-end. Also
+discovered — and fixed — along the way: the template every session clones
+from had its terminal server listening on an address that was only
+reachable from inside that one container, a leftover from before the
+controller's network design existed. That's now fixed too, with the
+template rebuilt and re-verified before going back into service.
+
+With CT 105 now genuinely running the playground controller, the old
+documentation-engine page has been retired — see the new
+[Playground Controller](/docs/services/playground-controller) page for
+what actually lives there today.
+
+## 2026-07-06
+
+The Proxmox host came back online after being unexpectedly offline for
+about three and a half days. The cause couldn't be pinned down — nothing
+in the logs pointed to a crash, which suggests a power interruption rather
+than anything software-related. Before resuming any work, a full backup of
+every container and VM, plus the host's own configuration, was taken and
+verified — standard practice before touching infrastructure that's just
+come back from an unplanned outage.
+
 ## 2026-07-03
 
 - Migrated all lab documentation into a structured `docs/` folder with
