@@ -1,0 +1,70 @@
+---
+title: "Playground Controller"
+description: "Session controller for the disposable Linux playground, LXC 105."
+status: published
+icon: "TerminalSquare"
+---
+
+> The playground-controller runs as an unprivileged LXC container (ID: 105)
+> on the Proxmox host. It's the backend for the lab's public playground
+> feature — visitors get a real, isolated Linux terminal session, spun up
+> on demand and destroyed when they're done.
+
+## Deployment Strategy
+
+CT 105 previously ran an unused documentation-engine experiment; it was
+decommissioned and repurposed as the playground's session controller once
+the playground's design (clone-per-session, isolated network segment) was
+ready to build against a real host.
+
+**Container Specs:**
+- **Container ID:** 105
+- **Hostname:** `playground-controller`
+- **Compute:** unprivileged LXC, `nesting=1`
+- **Network:** dual-homed — `192.168.1.105` on `vmbr0` (LAN), and
+  `10.99.0.1` on `vmbr_sandbox` (the playground's isolated network segment)
+
+## Network Role: the one deliberate bridge
+
+`vmbr_sandbox` has no route to the LAN or the internet, by design — session
+clones are fully isolated. That isolation only works because the controller
+is dual-homed on purpose: `net0` on `vmbr0` lets it receive requests from
+the site, and `net1` on `vmbr_sandbox` lets it reach each session clone's
+terminal to proxy the connection back to the visitor's browser. It's the
+single chokepoint between the two networks — nothing else bridges them.
+
+## What it runs
+
+A FastAPI service (`controller/` in the `jaysync-lab-playground` repo),
+deployed as a systemd service with `Restart=on-failure`:
+
+- **`POST /sessions`** — clones the golden template, starts it, waits for
+  its terminal to come up, and returns a session token and connection info.
+- **`WS /ws/{session_id}`** — proxies the visitor's browser terminal
+  directly to the session clone; the connection is destroyed the moment the
+  visitor disconnects, not held open or reused.
+- **Background reaper** — an independent safety net that checks the real
+  state of running session clones on a timer and destroys anything that's
+  overstayed its session, regardless of what the controller's own
+  bookkeeping thinks happened. This means an orphaned clone gets cleaned up
+  even after a controller crash or restart.
+
+## The golden template
+
+Every session is a fast linked clone of CT 180
+(`sandbox-template-playground`) — a pre-built, pre-hardened Debian
+container with the curated visitor experience (guided tour, resource caps,
+fork-bomb protection) already baked in. Cloning from a template rather than
+building each session from scratch is what makes sessions start in
+seconds instead of minutes.
+
+## Limits
+
+- **3 sessions** running at once, maximum
+- **15 minutes** per session before it's automatically cleaned up
+- **1 session per visitor** (by source IP) at a time
+
+## Source
+
+Controller code, deployment config, and the full build/testing history
+live in the `jaysync-lab-playground` repository, under `controller/`.

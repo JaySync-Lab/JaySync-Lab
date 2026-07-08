@@ -52,14 +52,24 @@ nodes:
     band: media-streaming
 
   - vmid: 105
-    name: production-documentation-engine
+    name: playground-controller
     type: lxc
     ip: "192.168.1.105"
-    role: "Documentation platform"
-    status_name: "Docs Engine"
-    docs: services/production-documentation-engine/README.md
+    role: "Playground session controller (dual-homed: vmbr0 + vmbr_sandbox)"
+    status_name: "Playground Controller"
+    docs: services/playground-controller/README.md
     band: automation-utilities
-    created: "2026-06-17"
+    created: "2026-07-06"
+
+  - vmid: 180
+    name: sandbox-template-playground
+    type: lxc
+    ip: null
+    role: "Golden template for playground sessions — a Proxmox template, not run directly"
+    status_name: "Playground Template"
+    docs: services/playground-controller/README.md
+    band: sandboxes-testing
+    created: "2026-06-19"
 
 overlay:
   - id: tailscale-proxmox
