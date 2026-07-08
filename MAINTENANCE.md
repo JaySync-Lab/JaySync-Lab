@@ -33,7 +33,7 @@
 | Uptime Kuma             | 192.168.1.102   | LXC        | 101  | The "Watchman" (Port 3001)         |
 | Home Assistant          | 192.168.1.11    | VM         | 103  | Smart Home OS (Port 8123)          |
 | Media Stack             | 192.168.1.104   | LXC        | 104  | Docker-based streaming (GPU)       |
-| Docs Engine             | 192.168.1.105   | LXC        | 105  | Documentation platform             |
+| Playground Controller   | 192.168.1.105   | LXC        | 105  | Playground session controller (dual-homed) |
 | Tailscale (Proxmox)     | 100.87.172.121  | Overlay    | —    | Remote access mesh VPN             |
 
 ## Standard Update Procedures

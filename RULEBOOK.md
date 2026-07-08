@@ -54,7 +54,7 @@ docs/
     ├── uptime-kuma.mdx
     ├── home-assistant.mdx
     ├── media-stack.mdx
-    └── production-documentation-engine.mdx
+    └── playground-controller.mdx
 ```
 
 Each top-level folder under `docs/` is a section in the site's sidebar.
