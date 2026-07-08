@@ -7,11 +7,21 @@
 
 ## Directory Legend
 
-- `/infrastructure/` -> Physical & Host OS (Hardware specs, Proxmox host configs, storage).
-- `/networking/` -> Traffic & DNS (Pi-hole, Tailscale, IP reservations).
-- `/services/` -> The Workloads (LXC/VM folders like uptime-kuma/).
+- `/docs/` -> All documentation content as MDX (includes `infrastructure/`,
+  `networking/`, `security/`, and `services/` subfolders), sourced by the
+  docs site and validated by CI before it can publish.
+- `/infrastructure/` -> Machine-readable inventory only (`inventory.yaml`)
+  — not prose documentation; the equivalent hardware/host writeups now
+  live under `/docs/infrastructure/`.
 - `/templates/` -> UI & Styling (CSS, HTML emails).
-- `/security/` -> SOPS/Age encryption rules and public keys.
+- `/secrets/` -> SOPS+age encrypted credentials. Never fetched by the docs
+  site's build.
+- `/scripts/` -> Repo tooling (`validate-docs.mjs` and anything else that
+  supports the docs pipeline).
+- `/.github/` -> CI workflows (`validate-and-dispatch.yml`).
+- `CHANGELOG.md` -> Technical changelog.
+- `MAINTENANCE.md` -> This file.
+- `RULEBOOK.md` -> Docs-authoring howto.
 
 ## IP Allocation Map
 
@@ -23,7 +33,7 @@
 | Uptime Kuma             | 192.168.1.102   | LXC        | 101  | The "Watchman" (Port 3001)         |
 | Home Assistant          | 192.168.1.11    | VM         | 103  | Smart Home OS (Port 8123)          |
 | Media Stack             | 192.168.1.104   | LXC        | 104  | Docker-based streaming (GPU)       |
-| Docs Engine             | 192.168.1.105   | LXC        | 105  | Documentation platform             |
+| Playground Controller   | 192.168.1.105   | LXC        | 105  | Playground session controller (dual-homed) |
 | Tailscale (Proxmox)     | 100.87.172.121  | Overlay    | —    | Remote access mesh VPN             |
 
 ## Standard Update Procedures
