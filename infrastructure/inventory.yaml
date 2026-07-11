@@ -1,3 +1,27 @@
+# Single source of truth for the lab's hardware/service inventory.
+#
+# This file feeds TWO consumers automatically — do not hand-edit copies
+# elsewhere:
+#   1. This repo's own docs.
+#   2. jaysync-lab-site's data layer (src/data/inventory.yaml) — pulled by
+#      its rebuild-from-docs pipeline alongside docs/, so the homepage,
+#      /architecture, and /services pages always reflect this file. A push
+#      here that touches inventory.yaml triggers a site rebuild (see
+#      .github/workflows/validate-and-dispatch.yml).
+#
+# Keep it accurate; it is what the public site displays.
+
+host:
+  model: "HP ProDesk 400 G3"
+  cpu: "Intel i5-6500"
+  ram_gb: 16
+  storage:
+    ssd_gb: 512
+    vault_tb: 1
+  proxmox_version: "9.2"
+  uptime_target_pct: 99.9
+  services_summary: "Pi-hole, Home Assistant, GPU-passthrough media streaming"
+
 hardware:
   - id: zte-router
     name: "ZTE Router"
@@ -58,7 +82,7 @@ nodes:
     role: "Playground session controller (dual-homed: vmbr0 + vmbr_sandbox)"
     status_name: "Playground Controller"
     docs: services/playground-controller/README.md
-    band: automation-utilities
+    band: core-network
     created: "2026-07-06"
 
   - vmid: 180
@@ -70,6 +94,11 @@ nodes:
     docs: services/playground-controller/README.md
     band: sandboxes-testing
     created: "2026-06-19"
+    # A Proxmox template, not a running service: no IP, no live status.
+    # The site shows it in the services catalog and the VMID band diagram
+    # (labelled as a template), but excludes it from live/runtime views
+    # and the "active containers" count.
+    template: true
 
 overlay:
   - id: tailscale-proxmox
