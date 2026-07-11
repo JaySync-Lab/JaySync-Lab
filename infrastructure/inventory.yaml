@@ -43,7 +43,7 @@ nodes:
     name: pi-hole
     type: lxc
     ip: "192.168.1.101"
-    role: "Local DNS & Network Protection"
+    role: "Network-wide DNS resolver & ad blocking"
     status_name: "Pi-hole"
     docs: services/pi-hole/README.md
     band: core-network
