@@ -10,6 +10,88 @@ technical version of this log is also kept at
 [`CHANGELOG.md`](https://github.com/JaySync-Lab/JaySync-Lab/blob/main/CHANGELOG.md)
 in the repository root — this page is the published, reader-facing copy.
 
+## 2026-07-11
+
+The site's homepage, [Architecture](/docs/infrastructure/hardware), and
+[Services](/docs/services/pi-hole) pages have always been driven by a
+structured inventory file — but that file lived as a hand-maintained
+copy inside `jaysync-lab-site`, separate from this repository's own
+`infrastructure/inventory.yaml`. That's exactly how the site's CT 105
+entry silently went stale earlier: the fix landed here, but nothing
+ever told the site's own copy about it. That gap is now closed —
+`jaysync-lab-site` pulls `infrastructure/inventory.yaml` automatically
+on every push, the same way it already pulled `/docs`, and a push to
+either now notifies the site to rebuild.
+
+Reconciling the two copies before wiring up the automation surfaced two
+real, previously invisible problems in the source file itself: it was
+missing the host hardware block the site's homepage needs to render at
+all, and CT 105 was recorded on the wrong VMID band. Both fixed here.
+It also turned up a genuine design question: this file already
+described CT 180, the playground's golden template — a real inventory
+entry, but not a running service, since Proxmox templates don't have
+an IP or a live status. Rather than hide it or misrepresent it as
+"active," it's now marked explicitly as a template, and the site shows
+it transparently: listed and labelled on the services page and the
+architecture diagram, but correctly excluded from the live-services
+view and the "active containers" count.
+
+Elsewhere, all four of the org's READMEs got a real accuracy pass —
+`jaysync-lab-site` didn't have one at all, and `jaysync-lab-playground`'s
+still described the state from partway through Phase 3, well after
+Phase 4 had already shipped and gone live. All four now cross-link each
+other and reflect what's actually true today.
+
+The playground also picked up a proper feedback loop: a form at
+[jslnode.anujajay.com/feedback](https://jslnode.anujajay.com/feedback)
+that turns a real visitor submission into a labeled GitHub issue —
+guarded by a honeypot field and a per-IP rate limit so it can't be
+trivially abused — plus two emails sent automatically through the
+existing Resend integration: one notifying the maintainer with a direct
+link to the new issue, and, if the visitor left an email, a genuinely
+personalized thank-you quoting their own message back to them. Every
+outgoing email — this new pair, and the existing offline-recovery
+notice — now shares one visual identity, including a small logo header
+reusing the site's own icon.
+
+Also fixed, found only once someone actually watched the page for a few
+seconds rather than just glancing at it: an animated decorative element
+on two pages was quietly leaking outside its own box and periodically
+convincing the browser there was more content below the fold than there
+really was — showing up as a scrollbar that flickered in and out every
+few seconds. Root-caused by directly measuring the page's scrollable
+area over time rather than guessing, and fixed by containing the
+animation the same way an existing, unaffected page on the site already
+did correctly.
+
+## 2026-07-10
+
+Two real, live bugs got fixed the way most of the good fixes in this
+project happen — by not trusting that something worked just because the
+code looked right. The playground's new on-screen mobile Ctrl toolbar
+passed every automated test against an emulated phone screen, but
+didn't actually work on a real iPhone; it turned out real mobile Safari
+handles viewport sizing differently than any emulator does, which the
+fix now accounts for directly, confirmed afterward on real hardware.
+Separately, scrolling with a mouse wheel inside a playground session
+was cycling through shell history instead of scrolling the terminal —
+traced back to a single missing setting in the golden template's
+terminal multiplexer configuration, fixed via a full template rebuild
+and confirmed against a live session.
+
+The playground also gained a live view of the actual host's CPU and
+memory load, gated behind a Proxmox permission grant scoped narrowly
+enough to allow nothing beyond that one read.
+
+Both public sites got a real mobile pass after actual phone testing
+turned up rough edges no desktop browser would ever show: a diagram
+that scrolled sideways with no visual hint that it could, a status
+line that wrapped awkwardly on the narrowest screens, and a splash
+animation that only played once per browser tab instead of every visit.
+All fixed, plus a small dismissible note suggesting a full computer for
+anyone visiting the playground from a phone, since a real terminal is
+still easier to drive with a keyboard.
+
 ## 2026-07-07
 
 The playground's session controller — the piece that actually spins up an

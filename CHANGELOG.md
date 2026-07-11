@@ -2,6 +2,22 @@
 
 All notable changes to the JaySync-Lab configuration and documentation are recorded here. Dates reflect when changes were committed to the repository.
 
+## 2026-07-11
+
+- **Automated the site's data sync** — `infrastructure/inventory.yaml` (the host/service inventory driving the site's homepage, `/architecture`, and `/services`) was hand-maintained separately in `jaysync-lab-site`, which is exactly how it silently went stale for CT 105 earlier. Now pulled automatically by the site's `rebuild-from-docs` pipeline alongside `docs/` — verified end-to-end with a real source-side edit that reached production with zero manual site-side steps
+- Reconciling the two copies surfaced a real schema gap: the source lacked a `host:` block the site's homepage needs, and had CT 105 on the wrong VMID band. Both fixed in the source; CT 180 (the playground's golden template, not a running service) marked `template: true` so the site shows it transparently — labelled, in the services catalogue and architecture diagram — without miscounting it as "active"
+- `validate-and-dispatch.yml` now also triggers on `infrastructure/inventory.yaml` changes, not just `docs/**`, so an inventory-only edit actually notifies the site
+- Rewrote all four org READMEs (`JaySync-Lab`, `jaysync-lab-site`, `jaysync-lab-playground`, `.github` profile) for accuracy — `jaysync-lab-site` had none at all; the playground's still said Phase 3 was next when Phase 4 has been live for a while
+- `jaysync-lab-playground`: added a feedback form (`/feedback`) — real submissions become labeled GitHub issues (bug / feature-request / feedback / contribution-interest), guarded by a honeypot field and a per-IP rate limit, plus two styled notification emails (an owner alert linking the issue, and a personalized thank-you to the submitter if they left an email) sent via the existing Resend integration, with a shared logo header across all outgoing mail
+- Fixed a real, live bug found and root-caused via direct measurement: `.scanline-overlay`'s animated pseudo-element was leaking into the page's scrollable-overflow calculation on two pages missing `overflow-hidden`, causing a periodic scrollbar flicker
+
+## 2026-07-10
+
+- `jaysync-lab-playground` Part 4: live host CPU/RAM stats (`GET /status`, gated on a new narrowly-scoped `Sys.Audit` Proxmox grant), and a mobile on-screen Ctrl/Esc/Tab/arrow toolbar for the terminal — the toolbar passed emulated-viewport testing but didn't actually work on a real iPhone (Safari's dynamic viewport chrome miscalculating `vh`), root-caused and fixed with `position: fixed` + `dvh` units + `env(safe-area-inset-bottom)`, then confirmed on real hardware
+- CT 180 golden template retemplated to fix `tmux` mouse mode (`set -g mouse on`) — wheel-scroll inside a session was cycling bash history instead of scrolling terminal output; verified end-to-end with a real mouse-wheel event against a live session
+- Round-2 mobile-compatibility pass across both public sites: fixed a discoverability gap on the site's VMID band diagram (intentionally horizontally-scrollable, but no visual cue on touch devices) and a cramped status-row layout on the playground's narrowest supported viewport; added a dismissible "use a computer for the best experience" banner
+- `jaysync-lab-site`: fixed the splash screen only playing once per browser session instead of on every load
+
 ## 2026-07-07
 
 - **Playground Phase 3 (session controller) complete** — full write-up in `jaysync-lab-playground`'s `implementation-log.md`. Summary:
