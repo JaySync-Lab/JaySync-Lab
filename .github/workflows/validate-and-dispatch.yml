@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'docs/**'
+      - 'infrastructure/inventory.yaml'
   workflow_dispatch:
 
 jobs:

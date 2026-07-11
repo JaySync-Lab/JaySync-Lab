@@ -13,23 +13,44 @@ guessing at anything.
 
 ## 1. What this repo is and how it connects to the site
 
-`/docs` in this repository is the single source of truth for everything
-published on [jaysync-lab-site](https://github.com/JaySync-Lab/jaysync-lab-site).
+This repository is the single source of truth for
+[jaysync-lab-site](https://github.com/JaySync-Lab/jaysync-lab-site). Two
+things here feed the site automatically:
 
-Every time you push a change under `docs/**` to `main`:
+- **`/docs`** — every documentation page published on the site.
+- **`infrastructure/inventory.yaml`** — the structured hardware/service
+  inventory that drives the site's homepage, `/architecture`, and
+  `/services` pages (the topology diagram, VMID band diagram, service
+  cards, and the neofetch-style host panel all read from it). This used
+  to be hand-maintained as a separate copy inside the site repo, which is
+  how it silently went stale once; it is now pulled from here, so this
+  file is the only place to edit it.
+
+Every time you push a change under `docs/**` **or** to
+`infrastructure/inventory.yaml` on `main`:
 
 1. A validation check runs automatically (see §7) confirming every changed
-   page has correct frontmatter and every folder has a `meta.json`.
+   docs page has correct frontmatter and every folder has a `meta.json`.
 2. If validation passes, this repo notifies `jaysync-lab-site` that new
    content is ready.
-3. The site pulls a fresh copy of `/docs`, filters out anything marked
+3. The site pulls a fresh copy of `/docs` **and**
+   `infrastructure/inventory.yaml`, filters out any docs marked
    `status: draft`, and rebuilds.
 4. If the site's build also succeeds, it deploys. If anything fails at any
    point, the live site is untouched — it just keeps showing the last
-   working version.
+   working version. (A malformed `inventory.yaml` fails the site's build,
+   so a broken inventory can never reach production either.)
 
-You never touch the site repo directly to publish a docs change. Editing
-`/docs` here and pushing is the entire publishing workflow.
+You never touch the site repo directly to publish a change. Editing
+`/docs` or `infrastructure/inventory.yaml` here and pushing is the entire
+publishing workflow.
+
+> **Note on the inventory schema:** a node marked `template: true` (e.g.
+> the playground golden template, CT 180) is shown on the site's services
+> catalogue and VMID band diagram labelled as a template, but excluded
+> from live/runtime views (topology, the "Live Services" rack) and the
+> "active containers" count — because it isn't a running service. Keep
+> that flag accurate.
 
 ## 2. Folder structure
 
