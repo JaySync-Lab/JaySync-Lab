@@ -1,5 +1,8 @@
 # SOPS Age Key
 age-key.txt
 
-# Graphify knowledge graph output
-graphify-out/
+# Graphify knowledge graph output -- keep graph.json/GRAPH_REPORT.md/
+# graph.html/manifest.json/cost.json tracked (that's the point: a future
+# session should be able to use this without rebuilding), just ignore the
+# large machine-local raw-extraction cache.
+graphify-out/cache/

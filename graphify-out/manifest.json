@@ -1,0 +1,137 @@
+{
+  "C:\\gitProject\\JaySync-Lab\\.claude\\settings.local.json": {
+    "mtime": 1781847209.978119,
+    "ast_hash": "3dcb62619b7ae6ef54b1ed24db40030e",
+    "semantic_hash": "3dcb62619b7ae6ef54b1ed24db40030e"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\infrastructure\\meta.json": {
+    "mtime": 1783053041.3497674,
+    "ast_hash": "7e62d996e77a71dc12544b56f9844c54",
+    "semantic_hash": "7e62d996e77a71dc12544b56f9844c54"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\meta.json": {
+    "mtime": 1783053041.3517785,
+    "ast_hash": "f8a3ed118997d75ea0f7c466520b25ed",
+    "semantic_hash": "f8a3ed118997d75ea0f7c466520b25ed"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\networking\\meta.json": {
+    "mtime": 1783053041.3527784,
+    "ast_hash": "9eb6f653c75104f363fe3cbb93af60f7",
+    "semantic_hash": "9eb6f653c75104f363fe3cbb93af60f7"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\security\\meta.json": {
+    "mtime": 1783053041.3557782,
+    "ast_hash": "218c0e62b189d492aaafb4ab83e7963a",
+    "semantic_hash": "218c0e62b189d492aaafb4ab83e7963a"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\services\\meta.json": {
+    "mtime": 1783511205.8787405,
+    "ast_hash": "a8b81d36a9509b54d8d3b063824ce97a",
+    "semantic_hash": "a8b81d36a9509b54d8d3b063824ce97a"
+  },
+  "C:\\gitProject\\JaySync-Lab\\scripts\\validate-docs.mjs": {
+    "mtime": 1783053041.4174428,
+    "ast_hash": "644c6afbff8eb760d7f442518df4700f",
+    "semantic_hash": "644c6afbff8eb760d7f442518df4700f"
+  },
+  "C:\\gitProject\\JaySync-Lab\\.github\\workflows\\validate-and-dispatch.yml": {
+    "mtime": 1783752193.4657454,
+    "ast_hash": "96e0d47b5d5aeb0bbc2bfb2b4f165eba",
+    "semantic_hash": "96e0d47b5d5aeb0bbc2bfb2b4f165eba"
+  },
+  "C:\\gitProject\\JaySync-Lab\\.sops.yaml": {
+    "mtime": 1781769503.8179257,
+    "ast_hash": "a03257d4093f277ae52920d944b7d002",
+    "semantic_hash": "a03257d4093f277ae52920d944b7d002"
+  },
+  "C:\\gitProject\\JaySync-Lab\\CHANGELOG.md": {
+    "mtime": 1783790604.366788,
+    "ast_hash": "f4fb69021bbdad5ef80dc2dc33f29eb6",
+    "semantic_hash": "f4fb69021bbdad5ef80dc2dc33f29eb6"
+  },
+  "C:\\gitProject\\JaySync-Lab\\CLAUDE.md": {
+    "mtime": 1783793046.06608,
+    "ast_hash": "6f575c4aa957d5d9d6dea8004b572816",
+    "semantic_hash": "6f575c4aa957d5d9d6dea8004b572816"
+  },
+  "C:\\gitProject\\JaySync-Lab\\MAINTENANCE.md": {
+    "mtime": 1783576063.7995577,
+    "ast_hash": "6e3ef3ddfdd19b1c41706d1dd7e08224",
+    "semantic_hash": "6e3ef3ddfdd19b1c41706d1dd7e08224"
+  },
+  "C:\\gitProject\\JaySync-Lab\\README.md": {
+    "mtime": 1783764149.842419,
+    "ast_hash": "8a4475c04c31f74531156299cab08204",
+    "semantic_hash": "8a4475c04c31f74531156299cab08204"
+  },
+  "C:\\gitProject\\JaySync-Lab\\RULEBOOK.md": {
+    "mtime": 1783752222.980149,
+    "ast_hash": "6b9ea84d07c63843a55beae782e7ff5f",
+    "semantic_hash": "6b9ea84d07c63843a55beae782e7ff5f"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\changelog.mdx": {
+    "mtime": 1783790604.3677785,
+    "ast_hash": "6ef95b0e3364b1154830fbf8c491d74f",
+    "semantic_hash": "6ef95b0e3364b1154830fbf8c491d74f"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\index.mdx": {
+    "mtime": 1783576063.7995577,
+    "ast_hash": "cc4e5979ca70de1abe8a37724fe02a9a",
+    "semantic_hash": "cc4e5979ca70de1abe8a37724fe02a9a"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\infrastructure\\hardware.mdx": {
+    "mtime": 1783053041.3497674,
+    "ast_hash": "c9507eeee811f9655afb1808de1aaeb5",
+    "semantic_hash": "c9507eeee811f9655afb1808de1aaeb5"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\infrastructure\\proxmox-host.mdx": {
+    "mtime": 1783053041.3488164,
+    "ast_hash": "5ded6f94d9244049dc0758224a32012c",
+    "semantic_hash": "5ded6f94d9244049dc0758224a32012c"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\networking\\tailscale-routing.mdx": {
+    "mtime": 1783053041.3537772,
+    "ast_hash": "a6bf4fedbd5b58a0e8a05d7a8423aa4e",
+    "semantic_hash": "a6bf4fedbd5b58a0e8a05d7a8423aa4e"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\security\\index.mdx": {
+    "mtime": 1783053041.354777,
+    "ast_hash": "5c347a7b11577542f87e74586fedcd98",
+    "semantic_hash": "5c347a7b11577542f87e74586fedcd98"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\services\\home-assistant.mdx": {
+    "mtime": 1783053041.3602889,
+    "ast_hash": "59e199beb5abb70ca9b9da49cd9bd4ed",
+    "semantic_hash": "59e199beb5abb70ca9b9da49cd9bd4ed"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\services\\media-stack.mdx": {
+    "mtime": 1783053041.357334,
+    "ast_hash": "a57a183a649157415bc5ae9be1976747",
+    "semantic_hash": "a57a183a649157415bc5ae9be1976747"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\services\\pi-hole.mdx": {
+    "mtime": 1783077692.333833,
+    "ast_hash": "83dd9f80dbdfd66d9736962253417a76",
+    "semantic_hash": "83dd9f80dbdfd66d9736962253417a76"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\services\\playground-controller.mdx": {
+    "mtime": 1783576062.5453362,
+    "ast_hash": "37ca8d355a87bf72ad1f36031712bda6",
+    "semantic_hash": "37ca8d355a87bf72ad1f36031712bda6"
+  },
+  "C:\\gitProject\\JaySync-Lab\\docs\\services\\uptime-kuma.mdx": {
+    "mtime": 1783053041.3602889,
+    "ast_hash": "085d6fece114bccbebb7080893651652",
+    "semantic_hash": "085d6fece114bccbebb7080893651652"
+  },
+  "C:\\gitProject\\JaySync-Lab\\infrastructure\\inventory.yaml": {
+    "mtime": 1783752624.1675997,
+    "ast_hash": "2f3009942eba752782cb0f64446fdaff",
+    "semantic_hash": "2f3009942eba752782cb0f64446fdaff"
+  },
+  "C:\\gitProject\\JaySync-Lab\\templates\\uptime-kuma-alert.html": {
+    "mtime": 1781769503.8340702,
+    "ast_hash": "eb9acc8f5db7a481a7abfb1d32718587",
+    "semantic_hash": "eb9acc8f5db7a481a7abfb1d32718587"
+  }
+}
