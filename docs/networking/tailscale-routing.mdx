@@ -42,42 +42,57 @@ echo -e "nameserver 1.1.1.1\nnameserver 8.8.8.8" > /etc/resolv.conf
 This fix ensures the hypervisor can reliably reach the internet and
 download packages independently of the lab's internal DNS containers.
 
-## Planned: Full Subnet Routing
+## Full Subnet Routing (implemented 2026-07-15)
 
-> **Status: planned, not yet implemented.** Documented here now so the
-> design isn't lost between sessions.
+**The gap that existed:** a remote device connected to the tailnet could
+only reach the Proxmox host itself (its own Tailscale IP). It could not
+reach any other device on `192.168.1.0/24` — Pi-hole, Uptime Kuma, Home
+Assistant, or the router's own admin UI — because Tailscale was only
+acting as an access node for the host, not as a subnet router for the
+wider LAN.
 
-**The gap:** today, a remote device connected to the tailnet can only
-reach the Proxmox host itself (its own Tailscale IP). It cannot reach any
-other device on `192.168.1.0/24` — Pi-hole, Uptime Kuma, Home Assistant,
-or the router's own admin UI — because Tailscale is only acting as an
-access node for the host, not as a subnet router for the wider LAN.
+**The fix**, applied on the existing bare-metal Tailscale install (no new
+container):
 
-**The fix (all on the existing bare-metal Tailscale install — no new
-container):**
-
-1. Enable IP forwarding on the Proxmox host:
-   ```bash
-   # /etc/sysctl.conf
-   net.ipv4.ip_forward = 1
-   net.ipv6.conf.all.forwarding = 1
-   ```
-2. Re-advertise the route, keeping the existing `--accept-dns=false` fix
+1. Enabled IP forwarding on the Proxmox host (`net.ipv4.ip_forward=1`,
+   `net.ipv6.conf.all.forwarding=1` in `/etc/sysctl.conf`, applied with
+   `sysctl -p`).
+2. Re-advertised the route, keeping the existing `--accept-dns=false` fix
    from above:
    ```bash
    tailscale up --advertise-routes=192.168.1.0/24 --accept-dns=false
    ```
-3. **Approve the route** in the Tailscale admin console (Machines → this
-   host → Edit route settings → enable `192.168.1.0/24`). Advertised
-   routes sit inactive until approved — this step is almost certainly
-   why remote access doesn't work today.
-4. On each remote device, confirm "Accept routes" / "use subnet routes"
-   is enabled (default on most clients, worth checking on mobile).
-5. Set Pi-hole (`192.168.1.101`) as the tailnet's custom DNS nameserver
-   in the admin console's DNS settings, so remote clients resolve local
-   hostnames the same way home-VLAN clients do — this is what makes the
-   friendly URLs on the [Reverse Proxy](/docs/networking/reverse-proxy)
-   page work identically from anywhere.
+3. **Approved the route** in the Tailscale admin console (Machines → this
+   host → Edit route settings → enabled `192.168.1.0/24`). Advertised
+   routes sit inactive until approved — this was indeed why remote access
+   didn't work before.
+4. Confirmed "Accept routes" is enabled on the remote test device.
 
-Once done, any device on the tailnet reaches the whole home VLAN by its
-normal IP (router included) exactly as if it were on-site.
+**Verified end-to-end**: tested from a real phone on mobile data (off the
+home WiFi/VLAN entirely), with Tailscale connected — the Proxmox GUI,
+Pi-hole, and the router's own admin page were all reachable by their
+normal `192.168.1.x` addresses, exactly as if on-site.
+
+**Still pending** (tracked on the [Reverse Proxy](/docs/networking/reverse-proxy)
+page): setting Pi-hole (`192.168.1.101`) as the tailnet's custom DNS
+nameserver in the admin console, so remote clients resolve friendly
+hostnames the same way home-VLAN clients will once that's built.
+
+### Execution notes (deviations from the original plan)
+
+This was executed remotely via SSH rather than by hand, using a new
+dedicated `claude-agent` account created for the purpose instead of
+`root` (least-privilege — its sudo access is scoped to only
+`tailscale`, `sysctl`, and appending to `/etc/sysctl.conf`; see
+`/etc/sudoers.d/claude-agent` on the host). Two things didn't match the
+original plan and had to be worked around:
+
+- **`sudo` wasn't installed on the host at all** — this Proxmox install
+  had only ever been managed as `root` directly. Installed it
+  (`apt-get install sudo`) before the scoped account could do anything.
+- **`/etc/sysctl.conf` didn't exist yet** — appending to it via `tee -a`
+  created it fresh; no issue, just worth noting it wasn't a pre-existing
+  file as the original plan assumed.
+- Binary paths for `tailscale` (`/usr/bin/tailscale`) and `sysctl`
+  (`/usr/sbin/sysctl`) had to be confirmed on the host rather than
+  assumed, since the sudoers rule has to match the exact resolved path.
