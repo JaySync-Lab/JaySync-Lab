@@ -1,0 +1,77 @@
+---
+title: "Reverse Proxy (Nginx Proxy Manager)"
+description: "Planned friendly-URL reverse proxy for all lab services, fronted by a wildcard cert on jaysynclab.com."
+status: draft
+icon: "Route"
+---
+
+> **Status: planned, not yet deployed.** This page documents the agreed
+> design so it isn't lost between sessions. It stays `draft` (excluded
+> from the live site) until the container exists and the cert is issued.
+
+## Why
+
+Prior to this, services were only reachable by raw `IP:port`
+(`192.168.1.102:3001` for Uptime Kuma, etc.), and only from inside the
+home VLAN — see the "Planned: Full Subnet Routing" section on
+[Tailscale Routing](/docs/networking/tailscale-routing) for the remote-access
+half of this problem. This page covers the second half: giving each
+service a real, memorable, trusted-HTTPS URL.
+
+## Domain decision
+
+`jaysynclab.com` was purchased and its DNS moved to Cloudflare
+specifically so the homelab's internal service URLs (and eventually the
+public docs site) live under their own domain, separate from other
+personal projects on `anujajay.com`. See
+[JaySync-Lab#9](https://github.com/JaySync-Lab/JaySync-Lab/issues/9) and
+[jaysync-lab-site#13](https://github.com/JaySync-Lab/jaysync-lab-site/issues/13)
+for the (separate, backlogged) public-site domain migration — that is
+**not** this project. This page is only about internal `*.lab.jaysynclab.com`
+service URLs.
+
+## Architecture
+
+**New container: Nginx Proxy Manager**
+- Planned VMID: 102 (`core-network` band, 100-119)
+- Docker-based, unprivileged LXC
+- Purpose: TLS termination + reverse proxy for every internal service
+
+**Certificate strategy**
+- One wildcard cert: `*.lab.jaysynclab.com`
+- Issued via Let's Encrypt DNS-01 challenge, automated through NPM's
+  built-in Cloudflare DNS plugin
+- Cloudflare API token scoped to `Zone:DNS:Edit` on the `jaysynclab.com`
+  zone only — no other zones, no account-level access
+- No public A/AAAA record is ever published for any `*.lab.jaysynclab.com`
+  name; the DNS-01 challenge only needs a transient TXT record, so nothing
+  under this domain is publicly reachable
+
+**Name resolution**
+- Pi-hole (192.168.1.101) gets a local wildcard DNS entry
+  (`address=/.lab.jaysynclab.com/192.168.1.102`) so every subdomain
+  resolves to NPM's internal IP
+- Because Pi-hole is also set as the tailnet's custom DNS server (see the
+  subnet-routing section on the Tailscale page), the same URLs resolve
+  identically whether you're on the home VLAN or remote over Tailscale
+
+## Planned proxy hosts
+
+| Friendly URL | Backend |
+| :--- | :--- |
+| `pihole.lab.jaysynclab.com` | 192.168.1.101 (Pi-hole) |
+| `kuma.lab.jaysynclab.com` | 192.168.1.102:3001 (Uptime Kuma) |
+| `ha.lab.jaysynclab.com` | 192.168.1.11:8123 (Home Assistant) |
+| `proxmox.lab.jaysynclab.com` | 192.168.1.100:8006 (Proxmox GUI) |
+
+More entries will be added here as other services (e.g. a future
+Grafana instance) come online.
+
+## Verification plan
+
+Before this page flips to `published`:
+- Real end-to-end test from off the home VLAN (mobile data, Tailscale
+  connected) hitting every URL above and confirming a valid, unwarned
+  HTTPS padlock
+- Confirm Pi-hole's wildcard entry doesn't shadow any other existing
+  local DNS record

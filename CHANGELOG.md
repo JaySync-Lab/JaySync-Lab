@@ -2,6 +2,13 @@
 
 All notable changes to the JaySync-Lab configuration and documentation are recorded here. Dates reflect when changes were committed to the repository.
 
+## 2026-07-15
+
+- Purchased `jaysynclab.com` and moved its DNS management to Cloudflare, to give the homelab ecosystem its own domain separate from other personal projects on `anujajay.com`. Migrating the public docs site to it is tracked as a backlogged follow-up, not started yet — see [jaysync-lab-site#13](https://github.com/JaySync-Lab/jaysync-lab-site/issues/13) and [JaySync-Lab#9](https://github.com/JaySync-Lab/JaySync-Lab/issues/9)
+- Researched Uptime Kuma vs. Grafana for monitoring: decided they're complementary, not competing — Uptime Kuma stays for up/down synthetic checks + alerting, and a Prometheus + Grafana stack will be added alongside it for resource/trend visibility (CPU/RAM/disk per LXC). Not yet built
+- Designed the fix for remote access over Tailscale: today the tailnet can only reach the Proxmox host itself, not the rest of `192.168.1.0/24` (Pi-hole, Uptime Kuma, Home Assistant, the router), because the host was never approved as a full subnet router. Documented as a planned (not yet implemented) section on [`tailscale-routing.mdx`](docs/networking/tailscale-routing.mdx)
+- Designed a reverse-proxy layer on top of that fix: a new Nginx Proxy Manager LXC fronting every service with friendly `*.lab.jaysynclab.com` URLs and a single wildcard Let's Encrypt cert (DNS-01 via Cloudflare, no public DNS records ever published). Documented as a new draft page, [`docs/networking/reverse-proxy.mdx`](docs/networking/reverse-proxy.mdx)
+
 ## 2026-07-11
 
 - **Automated the site's data sync** — `infrastructure/inventory.yaml` (the host/service inventory driving the site's homepage, `/architecture`, and `/services`) was hand-maintained separately in `jaysync-lab-site`, which is exactly how it silently went stale for CT 105 earlier. Now pulled automatically by the site's `rebuild-from-docs` pipeline alongside `docs/` — verified end-to-end with a real source-side edit that reached production with zero manual site-side steps

@@ -1,4 +1,4 @@
 {
   "title": "Networking",
-  "pages": ["tailscale-routing"]
+  "pages": ["tailscale-routing", "reverse-proxy"]
 }

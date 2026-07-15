@@ -41,3 +41,43 @@ echo -e "nameserver 1.1.1.1\nnameserver 8.8.8.8" > /etc/resolv.conf
 **Conclusion:**
 This fix ensures the hypervisor can reliably reach the internet and
 download packages independently of the lab's internal DNS containers.
+
+## Planned: Full Subnet Routing
+
+> **Status: planned, not yet implemented.** Documented here now so the
+> design isn't lost between sessions.
+
+**The gap:** today, a remote device connected to the tailnet can only
+reach the Proxmox host itself (its own Tailscale IP). It cannot reach any
+other device on `192.168.1.0/24` — Pi-hole, Uptime Kuma, Home Assistant,
+or the router's own admin UI — because Tailscale is only acting as an
+access node for the host, not as a subnet router for the wider LAN.
+
+**The fix (all on the existing bare-metal Tailscale install — no new
+container):**
+
+1. Enable IP forwarding on the Proxmox host:
+   ```bash
+   # /etc/sysctl.conf
+   net.ipv4.ip_forward = 1
+   net.ipv6.conf.all.forwarding = 1
+   ```
+2. Re-advertise the route, keeping the existing `--accept-dns=false` fix
+   from above:
+   ```bash
+   tailscale up --advertise-routes=192.168.1.0/24 --accept-dns=false
+   ```
+3. **Approve the route** in the Tailscale admin console (Machines → this
+   host → Edit route settings → enable `192.168.1.0/24`). Advertised
+   routes sit inactive until approved — this step is almost certainly
+   why remote access doesn't work today.
+4. On each remote device, confirm "Accept routes" / "use subnet routes"
+   is enabled (default on most clients, worth checking on mobile).
+5. Set Pi-hole (`192.168.1.101`) as the tailnet's custom DNS nameserver
+   in the admin console's DNS settings, so remote clients resolve local
+   hostnames the same way home-VLAN clients do — this is what makes the
+   friendly URLs on the [Reverse Proxy](/docs/networking/reverse-proxy)
+   page work identically from anywhere.
+
+Once done, any device on the tailnet reaches the whole home VLAN by its
+normal IP (router included) exactly as if it were on-site.
