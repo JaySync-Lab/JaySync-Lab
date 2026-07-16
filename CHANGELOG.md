@@ -17,6 +17,13 @@ All notable changes to the JaySync-Lab configuration and documentation are recor
 - Tailscale: added Pi-hole as a **split-DNS** nameserver (admin console DNS tab, restricted to `lab.jaysynclab.com`) so friendly URLs resolve identically on-VLAN and remote, without overriding all other DNS on remote devices. Verified end-to-end from a real off-VLAN phone
 - **Known open item, tracked in [JaySync-Lab#10](https://github.com/JaySync-Lab/JaySync-Lab/issues/10)**: Home Assistant is unreachable off-VLAN over Tailscale even by direct IP, unlike every other host on the subnet — likely related to its per-VM Proxmox firewall flag, not yet root-caused, parked until on-site
 - Evaluated Homepage vs. Dashy for a lab dashboard; decided on Homepage for its live-data service integrations (Pi-hole/Kuma/Proxmox/the *arr apps) over Dashy's stronger visual customization, since it complements the monitoring stack just built rather than duplicating it. Not yet built — see [JaySync-Lab#11](https://github.com/JaySync-Lab/JaySync-Lab/issues/11)
+- **Migrated the ecosystem's public-facing domains** from `anujajay.com` to `jaysynclab.com` (purchased/moved to Cloudflare 2026-07-15 — see below), completing [JaySync-Lab#9](https://github.com/JaySync-Lab/JaySync-Lab/issues/9)/[jaysync-lab-site#13](https://github.com/JaySync-Lab/jaysync-lab-site/issues/13):
+  - `lab.anujajay.com` → **`jaysynclab.com`** (docs site, this ecosystem's hub)
+  - `jslnode.anujajay.com` → **`jslnode.jaysynclab.com`** (playground frontend, Vercel)
+  - `api-jslnode.anujajay.com` → **`api-jslnode.jaysynclab.com`** (playground's Cloudflare Tunnel straight to CT 105 — not Vercel-hosted; added as a second `cloudflared` ingress hostname alongside the old one, tunnel restarted with ~2s of interruption, both hostnames verified live afterward)
+  - Both old domains **redirect** (308, via Vercel) to their new equivalents rather than being removed outright, so existing bookmarks/links keep working
+  - Found and cleaned up two stray `A` records at the `jaysynclab.com` apex — Cloudflare's auto-imported default parking-page placeholders from the moment DNS moved over, confirmed via matching creation timestamps and by querying the IPs directly (`<title>Parking Page</title>`) before removing them
+  - Repo-wide convention change alongside this: this repo no longer gets a "direct commits to main for docs" exception — branch-per-task with frequent commits, same as the other repos, going forward
 
 ## 2026-07-15
 
