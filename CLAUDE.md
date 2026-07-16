@@ -17,8 +17,8 @@ automatically.
 | Repo | What it is | Live | You are here? |
 |:-----|:-----------|:-----|:--|
 | **JaySync-Lab** | Docs + inventory — source of truth | — | ✅ |
-| [jaysync-lab-site](https://github.com/JaySync-Lab/jaysync-lab-site) | Next.js + Fumadocs site that publishes this repo's content | [lab.anujajay.com](https://lab.anujajay.com) | |
-| [jaysync-lab-playground](https://github.com/JaySync-Lab/jaysync-lab-playground) | Disposable in-browser Linux terminal sessions | [jslnode.anujajay.com](https://jslnode.anujajay.com) | |
+| [jaysync-lab-site](https://github.com/JaySync-Lab/jaysync-lab-site) | Next.js + Fumadocs site that publishes this repo's content | [jaysynclab.com](https://jaysynclab.com) | |
+| [jaysync-lab-playground](https://github.com/JaySync-Lab/jaysync-lab-playground) | Disposable in-browser Linux terminal sessions | [jslnode.jaysynclab.com](https://jslnode.jaysynclab.com) | |
 | [.github](https://github.com/JaySync-Lab/.github) | Org profile README | — | |
 
 **Current version: `v1.0.0`** on all four (tagged, released — see each repo's
@@ -52,17 +52,19 @@ impossible, not just fixed once.
 3. **[`CHANGELOG.md`](CHANGELOG.md)** — terse, technical, dated. What
    actually happened, newest first
 4. **[`docs/changelog.mdx`](docs/changelog.mdx)** — the same history,
-   reader-facing prose, live at [lab.anujajay.com/docs/changelog](https://lab.anujajay.com/docs/changelog)
+   reader-facing prose, live at [jaysynclab.com/docs/changelog](https://jaysynclab.com/docs/changelog)
 5. **[`infrastructure/inventory.yaml`](infrastructure/inventory.yaml)** —
    the actual structured data (hosts, services, VMID bands). Has a header
    comment stating it's a source of truth — read that before editing
 
 ## Conventions established across this whole ecosystem (all 3 code repos)
 
-- **Branch → PR → merge**, one focused change per PR. This repo is the one
-  exception that sometimes pushes small doc fixes direct to `main` (its own
-  RULEBOOK describes this as the norm for docs), but the other two repos use
-  PRs for everything.
+- **Branch → PR → merge**, one focused change per PR, across all four repos
+  including this one — `main` stays clean and functional at all times, with
+  frequent small commits on the working branch rather than large batched
+  ones. (RULEBOOK previously described occasional direct-to-main doc pushes
+  as normal for this repo specifically; that's superseded — branch per task
+  here too now.)
 - **Real end-to-end verification before claiming something works.** Not
   "the code looks right" — actual curl/Playwright/API calls against the
   real deployed system. This project has a documented history of bugs that
