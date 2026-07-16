@@ -3,7 +3,7 @@
 > A personal homelab on **Proxmox VE** — network-wide DNS/ad-blocking, monitoring, home automation, a GPU-accelerated media stack, and a live in-browser terminal playground. Built and documented in the open.
 
 [![Docs pipeline](https://github.com/JaySync-Lab/JaySync-Lab/actions/workflows/validate-and-dispatch.yml/badge.svg)](https://github.com/JaySync-Lab/JaySync-Lab/actions/workflows/validate-and-dispatch.yml)
-[![Live docs](https://img.shields.io/website?url=https%3A%2F%2Flab.anujajay.com&label=lab.anujajay.com&up_message=online)](https://lab.anujajay.com)
+[![Live docs](https://img.shields.io/website?url=https%3A%2F%2Fjaysynclab.com&label=jaysynclab.com&up_message=online)](https://jaysynclab.com)
 ![Proxmox VE 9.2](https://img.shields.io/badge/Proxmox_VE-9.2-E57000)
 
 This repository is the **single source of truth** for the lab: every service, network decision, and change is documented here as MDX, and the machine-readable [`infrastructure/inventory.yaml`](infrastructure/inventory.yaml) drives the public site. Push here → the docs site rebuilds itself. You never edit the site directly.
@@ -42,8 +42,8 @@ flowchart LR
 | Repo | What it is | Live |
 |:-----|:-----------|:-----|
 | **JaySync-Lab** *(here)* | Infrastructure docs + inventory — the source of truth | — |
-| [jaysync-lab-site](https://github.com/JaySync-Lab/jaysync-lab-site) | Next.js + Fumadocs site that publishes these docs | [lab.anujajay.com](https://lab.anujajay.com) |
-| [jaysync-lab-playground](https://github.com/JaySync-Lab/jaysync-lab-playground) | Disposable in-browser Linux terminal sessions | [jslnode.anujajay.com](https://jslnode.anujajay.com) |
+| [jaysync-lab-site](https://github.com/JaySync-Lab/jaysync-lab-site) | Next.js + Fumadocs site that publishes these docs | [jaysynclab.com](https://jaysynclab.com) |
+| [jaysync-lab-playground](https://github.com/JaySync-Lab/jaysync-lab-playground) | Disposable in-browser Linux terminal sessions | [jslnode.jaysynclab.com](https://jslnode.jaysynclab.com) |
 
 ---
 
@@ -68,4 +68,4 @@ untouched. Full walkthrough in [`RULEBOOK.md`](RULEBOOK.md).
 
 ---
 
-📖 **Read the docs:** [lab.anujajay.com](https://lab.anujajay.com)
+📖 **Read the docs:** [jaysynclab.com](https://jaysynclab.com)

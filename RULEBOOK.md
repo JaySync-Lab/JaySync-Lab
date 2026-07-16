@@ -92,7 +92,9 @@ becomes `/docs/services/pi-hole`. You don't set the URL manually anywhere.
 4. Write the content in normal Markdown below the frontmatter.
 5. Add the new filename (without `.mdx`) to that folder's `meta.json`
    `pages` array, in the order you want it to appear.
-6. Commit and push to `main`. That's the whole publishing step.
+6. Commit on a branch, open a PR, merge to `main`. Once merged, the rest
+   of the publishing pipeline (below) happens automatically on push to
+   `main` — no separate manual step.
 
 ## 4. Adding a new section (new top-level folder)
 
