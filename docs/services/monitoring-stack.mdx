@@ -1,0 +1,67 @@
+---
+title: "Monitoring Stack"
+description: "Prometheus + Grafana + pve-exporter, LXC 120 — resource/trend visibility alongside Uptime Kuma."
+status: published
+icon: "AreaChart"
+---
+
+> Runs as an unprivileged LXC container (VMID 120) on the Proxmox host.
+> Deliberately complements, not replaces, [Uptime Kuma](/docs/services/uptime-kuma):
+> Kuma answers "is it up?", this stack answers "how's it trending?" —
+> CPU/RAM/disk usage per guest over time, not just a synthetic
+> up/down check.
+
+## Deployment & Scope
+
+**Container specs:**
+- **Container ID:** 120
+- **Compute:** 2 cores
+- **Memory:** 2048MB RAM / 1024MB swap
+- **Root Disk:** 16GB on `local-lvm`
+- **Features:** `nesting=1,keyctl=1` (Docker-in-LXC)
+- **Network:** 192.168.1.120 on vmbr0
+- **Band:** `automation-utilities` (120-139)
+
+**Docker Compose stack**, three services:
+- **Prometheus** (`prom/prometheus`) — scrapes itself + pve-exporter every 30s
+- **pve-exporter** (`prompve/prometheus-pve-exporter`) — translates the
+  Proxmox API into Prometheus metrics for every guest
+- **Grafana** (`grafana/grafana`) — dashboards, currently the community
+  ["Proxmox via Prometheus"](https://grafana.com/grafana/dashboards/10347-proxmox-via-prometheus/)
+  dashboard (14 panels: per-guest CPU/RAM/disk/network)
+
+## Proxmox API access
+
+A dedicated, read-only Proxmox API user feeds pve-exporter — not the
+root-capable SSH key, and not the broader `claude-agent` automation
+account:
+
+- **User:** `pve-exporter@pve`
+- **Role:** custom `ExporterAuditRole` (`Sys.Audit`, `Datastore.Audit`,
+  `VM.Audit` only — read-only, cannot start/stop/modify anything)
+- **Token:** `pve-exporter@pve!monitoring`, created once via a root-key
+  bootstrap action (not part of `claude-agent`'s ongoing sudo scope —
+  see [MAINTENANCE.md](../../MAINTENANCE.md#ai-assisted-infrastructure-access))
+
+The token secret was written directly into the exporter's config file
+on the host and never printed to a terminal, log, or chat transcript
+during setup.
+
+## Access
+
+Reachable directly at `192.168.1.120:3000` (Grafana) and
+`192.168.1.120:9090` (Prometheus), or via the friendly URL
+`grafana.lab.jaysynclab.com` through the
+[reverse proxy](/docs/networking/reverse-proxy) — works both on the
+home VLAN and remotely over Tailscale.
+
+## Known gotchas (for next time)
+
+- Proxmox reserves the `PVE`-prefixed namespace for role IDs — naming a
+  custom role `PVEExporterRole` fails; `ExporterAuditRole` (or anything
+  not starting with `PVE`) works.
+- A config file written from outside a container (e.g. via `pct exec`
+  from the host) inherits whatever umask the writing process used — a
+  `600` root-owned file is unreadable by a Docker container process
+  running as non-root, causing a silent crashloop until the permissions
+  are corrected.

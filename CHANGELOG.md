@@ -2,6 +2,22 @@
 
 All notable changes to the JaySync-Lab configuration and documentation are recorded here. Dates reflect when changes were committed to the repository.
 
+## 2026-07-16
+
+- **Built and deployed the reverse proxy** (Nginx Proxy Manager, VMID 102, `192.168.1.106`) — Docker Compose LXC, wildcard `*.lab.jaysynclab.com` cert issued via Let's Encrypt DNS-01 through Cloudflare, Pi-hole wildcard DNS pointing all subdomains at it. Full design/architecture on [`docs/networking/reverse-proxy.mdx`](docs/networking/reverse-proxy.mdx), now flipped from `draft` to `published`
+  - Gotcha: NPM's default admin email (`admin@example.com`) makes every Let's Encrypt request fail with a generic "Internal Error" that looks like a Cloudflare/network problem but isn't — the email has to be changed to a real address first
+  - Gotcha: Pi-hole v6/FTL no longer reads `/etc/dnsmasq.d/*.conf` for wildcard DNS — the correct place is `misc.dnsmasq_lines` in `/etc/pihole/pihole.toml`
+  - Live proxy hosts: `pihole`, `kuma`, `proxmox` (needed `Scheme: https`, not `http`, to avoid a redirect loop against Proxmox's TLS-only port 8006), `ha` (needed `http.trusted_proxies`/`use_x_forwarded_for` added to Home Assistant's `configuration.yaml` — HA rejects unrecognized reverse proxies with 400 otherwise), `grafana`. `media-stack` deliberately excluded, not an oversight
+- **Built the monitoring stack** (Prometheus + Grafana + pve-exporter, VMID 120, `192.168.1.120`) — complements Uptime Kuma rather than replacing it; imported the community "Proxmox via Prometheus" dashboard, confirmed live per-guest CPU/status data. Full writeup on [`docs/services/monitoring-stack.mdx`](docs/services/monitoring-stack.mdx)
+  - New dedicated read-only Proxmox API user (`pve-exporter@pve`, custom `ExporterAuditRole`: `Sys.Audit`/`Datastore.Audit`/`VM.Audit` only) — token secret was piped directly into the exporter's config file on the host and never printed to any log or transcript
+  - Gotcha: Proxmox reserves the `PVE`-prefixed role-ID namespace; a role named `PVEExporterRole` fails, had to rename to `ExporterAuditRole`
+  - Gotcha: a config file written from the host via `pct exec` inherited a `600` root-only umask, unreadable by the container's non-root Docker process — silent crashloop until `chmod 644`
+- **Found and fixed a real, pre-existing data drift**: Home Assistant (VMID 103)'s documented IP, `192.168.1.11` in `infrastructure/inventory.yaml`/`MAINTENANCE.md`, was stale — the VM's actual IP is `192.168.1.12` (confirmed unreachable at `.11` from a peer container, then confirmed live at `.12` via the Proxmox console). Fixed in both files
+- **Introduced `claude-agent`**, a dedicated non-root account for AI-assisted infrastructure changes, replacing ad-hoc use of the root SSH key — see the new [AI-Assisted Infrastructure Access](MAINTENANCE.md#ai-assisted-infrastructure-access) section in `MAINTENANCE.md` for the full credential picture (SSH account + narrowly-scoped sudoers grown one explicit approval at a time, a separate dedicated NPM admin account, and the `pve-exporter@pve` API token)
+- Tailscale: added Pi-hole as a **split-DNS** nameserver (admin console DNS tab, restricted to `lab.jaysynclab.com`) so friendly URLs resolve identically on-VLAN and remote, without overriding all other DNS on remote devices. Verified end-to-end from a real off-VLAN phone
+- **Known open item, tracked in [JaySync-Lab#10](https://github.com/JaySync-Lab/JaySync-Lab/issues/10)**: Home Assistant is unreachable off-VLAN over Tailscale even by direct IP, unlike every other host on the subnet — likely related to its per-VM Proxmox firewall flag, not yet root-caused, parked until on-site
+- Evaluated Homepage vs. Dashy for a lab dashboard; decided on Homepage for its live-data service integrations (Pi-hole/Kuma/Proxmox/the *arr apps) over Dashy's stronger visual customization, since it complements the monitoring stack just built rather than duplicating it. Not yet built — see [JaySync-Lab#11](https://github.com/JaySync-Lab/JaySync-Lab/issues/11)
+
 ## 2026-07-15
 
 - Purchased `jaysynclab.com` and moved its DNS management to Cloudflare, to give the homelab ecosystem its own domain separate from other personal projects on `anujajay.com`. Migrating the public docs site to it is tracked as a backlogged follow-up, not started yet — see [jaysync-lab-site#13](https://github.com/JaySync-Lab/jaysync-lab-site/issues/13) and [JaySync-Lab#9](https://github.com/JaySync-Lab/JaySync-Lab/issues/9)

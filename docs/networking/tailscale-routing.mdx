@@ -73,10 +73,17 @@ home WiFi/VLAN entirely), with Tailscale connected — the Proxmox GUI,
 Pi-hole, and the router's own admin page were all reachable by their
 normal `192.168.1.x` addresses, exactly as if on-site.
 
-**Still pending** (tracked on the [Reverse Proxy](/docs/networking/reverse-proxy)
-page): setting Pi-hole (`192.168.1.101`) as the tailnet's custom DNS
-nameserver in the admin console, so remote clients resolve friendly
-hostnames the same way home-VLAN clients will once that's built.
+**Split-DNS for friendly hostnames (implemented 2026-07-16)**: Pi-hole
+(`192.168.1.101`) is set as a nameserver in the Tailscale admin console's
+DNS tab, **restricted to the domain `lab.jaysynclab.com`** rather than
+overriding all DNS tailnet-wide. This means only
+`*.lab.jaysynclab.com` lookups get forwarded to Pi-hole — everything
+else on a remote device keeps using its normal DNS untouched. Verified
+end-to-end from a real off-VLAN phone: `pihole.lab.jaysynclab.com` and
+`kuma.lab.jaysynclab.com` both resolve and load correctly. See the
+[Reverse Proxy](/docs/networking/reverse-proxy) page for the full
+picture, including one service (Home Assistant) that's still
+off-VLAN-only pending further investigation.
 
 ### Execution notes (deviations from the original plan)
 

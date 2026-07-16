@@ -57,10 +57,20 @@ nodes:
     docs: services/uptime-kuma/README.md
     band: core-network
 
+  - vmid: 102
+    name: nginx-proxy-manager
+    type: lxc
+    ip: "192.168.1.106"
+    role: "Reverse proxy — friendly *.lab.jaysynclab.com URLs + wildcard TLS"
+    status_name: "Nginx Proxy Manager"
+    docs: networking/reverse-proxy.md
+    band: core-network
+    created: "2026-07-15"
+
   - vmid: 103
     name: home-assistant
     type: vm
-    ip: "192.168.1.11"
+    ip: "192.168.1.12"
     role: "Smart Home OS (HAOS)"
     status_name: "Home Assistant"
     docs: services/home-assistant/README.md
@@ -84,6 +94,16 @@ nodes:
     docs: services/playground-controller/README.md
     band: core-network
     created: "2026-07-06"
+
+  - vmid: 120
+    name: monitoring-stack
+    type: lxc
+    ip: "192.168.1.120"
+    role: "Prometheus + Grafana + pve-exporter — resource/trend monitoring alongside Uptime Kuma"
+    status_name: "Monitoring Stack"
+    docs: services/monitoring-stack/README.md
+    band: automation-utilities
+    created: "2026-07-16"
 
   - vmid: 180
     name: sandbox-template-playground
