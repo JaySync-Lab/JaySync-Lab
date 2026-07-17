@@ -1,0 +1,79 @@
+---
+title: "Homepage Dashboard"
+description: "Planned single-pane-of-glass dashboard for every lab service, built with gethomepage.dev."
+status: draft
+icon: "LayoutDashboard"
+---
+
+> **Status: planned, not yet deployed.** Documented here now so the
+> design isn't lost between sessions. Stays `draft` (excluded from the
+> live site) until the container exists and every widget is verified
+> live.
+
+## Why
+
+Uptime Kuma answers "is it up?" and the [monitoring stack](/docs/services/monitoring-stack)
+answers "how's it trending?" — neither gives a single glanceable view
+across every service with live status/data in one place. Evaluated
+against Dashy; chose [Homepage](https://gethomepage.dev) for its
+first-class live-data integrations (real widgets, not just link tiles)
+across most of what's already running here.
+
+## Architecture
+
+**Container**: new LXC, VMID 121, `automation-utilities` band
+(120-139) — same band as the [monitoring stack](/docs/services/monitoring-stack)
+(120), since a dashboard fits "analytics nodes" better than
+`core-network`'s DNS/reverse-proxy/firewall purpose.
+- `192.168.1.121` on `vmbr0`
+- Unprivileged, Debian 13, `nesting=1,keyctl=1` (Docker-in-LXC) — same
+  pattern as every other Docker-based service in this lab
+
+**Config**: lives only on the container (`/opt/homepage/config/`), **not
+tracked in git** — consistent with how NPM, Prometheus, and Pi-hole's
+configs were handled, despite this issue's original text speculating
+about config-as-code. Secrets still go through a `.env` file plus
+Homepage's `{{HOMEPAGE_VAR_X}}` substitution syntax rather than being
+hardcoded in the YAML, even though the YAML itself isn't committed —
+good practice regardless of tracking.
+
+**Access**: `dashboard.lab.jaysynclab.com` via the existing
+[reverse proxy](/docs/networking/reverse-proxy), using the wildcard
+cert already in place. Works on-VLAN and off-VLAN via the existing
+Tailscale split-DNS setup — no new access pattern needed.
+
+## Scope — cards for everything
+
+| Service | Widget type |
+| :--- | :--- |
+| Pi-hole | Live (blocked queries, status) |
+| Uptime Kuma | Live (up/down summary) |
+| Home Assistant | Live (entity/state summary) |
+| Proxmox | Live (host CPU/RAM/disk) |
+| Grafana | Live |
+| Nginx Proxy Manager | Bookmark only — not a typical Homepage live-widget target |
+| Jellyfin | Live (now playing / library stats) |
+| Sonarr / Radarr / Prowlarr | Live (queue/activity) |
+| qBittorrent | Live (active torrents/speed) |
+
+## Credentials
+
+One API key/token per live widget, each created with its exact scope
+shown before creation (same pattern as every credential this session):
+
+- Pi-hole API token, Home Assistant long-lived access token, Grafana
+  viewer-role API key, Sonarr/Radarr/Prowlarr/qBittorrent API keys
+  (each generated in their own settings UI)
+- **Proxmox: reusing** the existing read-only `pve-exporter@pve` token
+  rather than minting a new one — same scope already covers what
+  Homepage's widget needs (`Sys.Audit`/`Datastore.Audit`/`VM.Audit`),
+  and it's already appropriately narrow. A dedicated token can replace
+  this later if isolation between the monitoring stack and the
+  dashboard ever becomes a real concern.
+
+## Verification plan
+
+Before this page flips to `published`:
+- Every live widget confirmed actually rendering real data, not just
+  "configured without erroring"
+- Real end-to-end test from off the home VLAN over Tailscale
