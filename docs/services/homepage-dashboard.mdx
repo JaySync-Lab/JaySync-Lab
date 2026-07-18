@@ -1,14 +1,12 @@
 ---
 title: "Homepage Dashboard"
-description: "Planned single-pane-of-glass dashboard for every lab service, built with gethomepage.dev."
-status: draft
+description: "Single-pane-of-glass dashboard for the lab's core services, built with gethomepage.dev."
+status: published
 icon: "LayoutDashboard"
 ---
 
-> **Status: planned, not yet deployed.** Documented here now so the
-> design isn't lost between sessions. Stays `draft` (excluded from the
-> live site) until the container exists and every widget is verified
-> live.
+> **Status: deployed and live** at `dashboard.lab.jaysynclab.com`, on
+> and off the home VLAN via Tailscale split-DNS.
 
 ## Why
 
@@ -42,38 +40,44 @@ good practice regardless of tracking.
 cert already in place. Works on-VLAN and off-VLAN via the existing
 Tailscale split-DNS setup — no new access pattern needed.
 
-## Scope — cards for everything
+## Scope — cards for the core stack
 
 | Service | Widget type |
 | :--- | :--- |
 | Pi-hole | Live (blocked queries, status) |
-| Uptime Kuma | Live (up/down summary) |
 | Home Assistant | Live (entity/state summary) |
 | Proxmox | Live (host CPU/RAM/disk) |
-| Grafana | Live |
+| Uptime Kuma | Bookmark only, for now — needs a public status page configured (with a slug) before a live widget can point at it |
+| Grafana | Bookmark only — Homepage's Grafana widget only supports basic-auth username/password, not a service-account token, so it's parked as a link until a dedicated Viewer-role Grafana user exists |
 | Nginx Proxy Manager | Bookmark only — not a typical Homepage live-widget target |
-| Jellyfin | Live (now playing / library stats) |
-| Sonarr / Radarr / Prowlarr | Live (queue/activity) |
-| qBittorrent | Live (active torrents/speed) |
+
+The media stack (Jellyfin/Sonarr/Radarr/Prowlarr/qBittorrent) was
+deliberately left out of the dashboard entirely, same as it's excluded
+from the reverse proxy.
 
 ## Credentials
 
-One API key/token per live widget, each created with its exact scope
-shown before creation (same pattern as every credential this session):
+One credential per live widget, each scoped to what the widget
+actually reads:
 
-- Pi-hole API token, Home Assistant long-lived access token, Grafana
-  viewer-role API key, Sonarr/Radarr/Prowlarr/qBittorrent API keys
-  (each generated in their own settings UI)
-- **Proxmox: reusing** the existing read-only `pve-exporter@pve` token
-  rather than minting a new one — same scope already covers what
-  Homepage's widget needs (`Sys.Audit`/`Datastore.Audit`/`VM.Audit`),
-  and it's already appropriately narrow. A dedicated token can replace
-  this later if isolation between the monitoring stack and the
-  dashboard ever becomes a real concern.
+- **Pi-hole**: an app password (Settings → Web interface/API → Expert
+  → Configure app password) — the v6 API's supported auth method,
+  paired with `version: 6` in the widget config
+- **Home Assistant**: a long-lived access token (Profile → Security →
+  Long-Lived Access Tokens)
+- **Proxmox: reusing** the existing read-only `pve-exporter@pve!monitoring`
+  token rather than minting a new one — same scope already covers what
+  Homepage's widget needs, and it's already appropriately narrow. A
+  dedicated token can replace this later if isolation between the
+  monitoring stack and the dashboard ever becomes a real concern. The
+  widget's `username` field takes the full `user@realm!tokenname`
+  form, with the token secret as `password` — there's no separate
+  token-ID field, unlike the exporter's own config format.
 
-## Verification plan
+## Verification
 
-Before this page flips to `published`:
-- Every live widget confirmed actually rendering real data, not just
-  "configured without erroring"
-- Real end-to-end test from off the home VLAN over Tailscale
+- Pi-hole app password and the HA long-lived token were each confirmed
+  directly against their own APIs (not just "Homepage didn't error")
+- Full path tested end-to-end: DNS → reverse proxy (wildcard TLS) →
+  container, all returning `200`
+- Reachable both on the home VLAN and off it via Tailscale split-DNS

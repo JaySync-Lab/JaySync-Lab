@@ -105,6 +105,16 @@ nodes:
     band: automation-utilities
     created: "2026-07-16"
 
+  - vmid: 121
+    name: homepage-dashboard
+    type: lxc
+    ip: "192.168.1.121"
+    role: "Single-pane-of-glass dashboard (gethomepage.dev) for the core service stack"
+    status_name: "Homepage Dashboard"
+    docs: services/homepage-dashboard/README.md
+    band: automation-utilities
+    created: "2026-07-18"
+
   - vmid: 180
     name: sandbox-template-playground
     type: lxc

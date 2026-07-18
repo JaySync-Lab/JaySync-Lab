@@ -36,6 +36,7 @@
 | Media Stack             | 192.168.1.104   | LXC        | 104  | Docker-based streaming (GPU)       |
 | Playground Controller   | 192.168.1.105   | LXC        | 105  | Playground session controller (dual-homed) |
 | Monitoring Stack        | 192.168.1.120   | LXC        | 120  | Prometheus + Grafana + pve-exporter (Port 3000) |
+| Homepage Dashboard      | 192.168.1.121   | LXC        | 121  | gethomepage.dev dashboard (Port 3000) |
 | Tailscale (Proxmox)     | 100.87.172.121  | Overlay    | —    | Remote access mesh VPN             |
 
 ## Standard Update Procedures
