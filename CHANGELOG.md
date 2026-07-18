@@ -4,6 +4,7 @@ All notable changes to the JaySync-Lab configuration and documentation are recor
 
 ## 2026-07-18
 
+- **Fixed Homepage's default placeholder bookmarks**: `config/bookmarks.yaml` ships pre-populated with demo links (GitHub/Reddit/YouTube under generic groups) that render as normal-looking content rather than an obvious TODO, so they'd gone live unnoticed on first deploy. Replaced with real links grouped as Personal (GitHub, LinkedIn, `anujajay.com`) and JaySync-Lab (org GitHub, docs site, playground)
 - **Completed and deployed the Homepage dashboard** (VMID 121, `192.168.1.121`, `automation-utilities` band) at `dashboard.lab.jaysynclab.com`, closing [JaySync-Lab#11](https://github.com/JaySync-Lab/JaySync-Lab/issues/11). Full writeup on [`docs/services/homepage-dashboard.mdx`](docs/services/homepage-dashboard.mdx), now flipped from `draft` to `published`
   - Live widgets: Pi-hole (app password, `version: 6`), Home Assistant (long-lived access token), Proxmox (reused the existing read-only `pve-exporter@pve!monitoring` token — no new credential minted)
   - Descoped from the original design: the media stack (Jellyfin/Sonarr/Radarr/Prowlarr/qBittorrent) dropped entirely; Uptime Kuma and Grafana downgraded to plain bookmark links rather than live widgets — Kuma needs a public status page configured first, and Homepage's Grafana widget only supports basic-auth username/password, not the service-account token that was generated for it
