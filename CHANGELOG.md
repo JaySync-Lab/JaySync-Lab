@@ -2,6 +2,13 @@
 
 All notable changes to the JaySync-Lab configuration and documentation are recorded here. Dates reflect when changes were committed to the repository.
 
+## 2026-07-19
+
+- **Home Assistant's `http.trusted_proxies`/`use_x_forwarded_for` config (first added 2026-07-16) had disappeared entirely** — `configuration.yaml` had no `http:` block at all, likely wiped by a HA update or a config reset at some point between then and now. Symptom: `ha.lab.jaysynclab.com` returned a real `400: Bad Request` from HA itself (not a proxy/network error — confirmed HA was healthy and returned `200` when hit directly at `192.168.1.12:8123`), while direct-IP access kept working fine. Re-added the same block and restarted; if this recurs a third time, it's worth checking whether something in this lab's update/backup process is actively reverting the file rather than assuming it's coincidental
+- Filed [JaySync-Lab#15](https://github.com/JaySync-Lab/JaySync-Lab/issues/15): the Proxmox host doesn't reliably auto power-on after AC power loss (HP's "After Power Loss" BIOS setting) — confirmed via a deliberate power-off/on test. Likely related to this lab's other previously-undiagnosed stability incidents (2026-07-06, 2026-07-18) rather than a separate problem. Not remotely diagnosable or fixable — parked until physically on-site, same as #10
+- Filed and fixed [jaysync-lab-playground#41](https://github.com/JaySync-Lab/jaysync-lab-playground/issues/41)-adjacent bug: the backend's CORS allow-list still referenced the pre-migration `jslnode.anujajay.com` origin, missed because it lives on a manually-deployed systemd service that the domain migration's Vercel/Cloudflare Tunnel sweep never touched. Every real browser request was silently CORS-blocked (curl doesn't enforce CORS, so it looked fine in every direct test) — the site showed "offline" regardless of actual backend health. Fixed and verified live
+- Styled the playground's outage-recovery email with the project's existing shared branded template (`renderEmailShell()`) instead of a plain unstyled string — it was the one email in the project that had never been switched over
+
 ## 2026-07-18
 
 - **Fixed Homepage's default placeholder bookmarks**: `config/bookmarks.yaml` ships pre-populated with demo links (GitHub/Reddit/YouTube under generic groups) that render as normal-looking content rather than an obvious TODO, so they'd gone live unnoticed on first deploy. Replaced with real links grouped as Personal (GitHub, LinkedIn, `anujajay.com`) and JaySync-Lab (org GitHub, docs site, playground)
