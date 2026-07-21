@@ -1,0 +1,4 @@
+{
+  "title": "Ecosystem",
+  "pages": ["site-architecture", "domain-dns-architecture", "playground-architecture", "email-notifications"]
+}

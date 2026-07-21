@@ -1,0 +1,62 @@
+---
+title: "Email & Notifications"
+description: "Every notification path in the ecosystem: Resend, the outage-recovery queue, and Uptime Kuma's alert emails."
+status: published
+icon: "Mail"
+---
+
+> Two independent notification systems exist in this ecosystem, for two
+> independent purposes — worth documenting together specifically so they
+> don't get confused with each other.
+
+## Playground Outage/Recovery Emails (Resend)
+
+The playground's "Notify me" flow (shown when the backend is offline) uses
+[Resend](https://resend.com) to send a "the playground is back" email once
+the host genuinely recovers.
+
+- **From address:** on the `jaysynclab.com` apex, domain-verified
+  (SPF/DKIM/DMARC) — migrated from an `anujajay.com` address once
+  `jaysynclab.com`'s own domain verification completed.
+- **Queue:** a Redis SET (Vercel KV / Upstash Redis) holding every email
+  address that signed up during the *current* outage. Additive only
+  during an outage; fully cleared after every recovery send, so a later,
+  separate outage always starts from an empty list — no cross-outage
+  bleed.
+- **Trigger paths:** a push notification the instant the controller starts
+  (see [Playground Architecture](/docs/ecosystem/playground-architecture)),
+  plus a once-daily cron fallback (a Vercel Hobby-plan limit, not a
+  deliberate design choice — the plan called for hourly). Both funnel
+  through the same function, which always does its own real health check
+  and never trusts the caller — a "still up" check on either path never
+  sends email, only a genuine down→up transition does.
+- **A real gotcha, found and fixed:** the Redis client's `Redis.fromEnv()`
+  helper looks specifically for `UPSTASH_REDIS_REST_URL`/
+  `UPSTASH_REDIS_REST_TOKEN` env vars — but only the older
+  `KV_REST_API_URL`/`KV_REST_API_TOKEN` naming was actually configured on
+  Vercel, so every subscribe attempt was silently throwing. Fixed by
+  constructing the client explicitly from the vars that actually exist,
+  rather than keeping two copies of the same secret in sync.
+
+## Playground Feedback Confirmation Emails (Resend)
+
+The same Resend integration also sends a thank-you email to anyone who
+leaves an email address with feedback, plus a notification to the project
+owner — both using the same branded HTML template (a shared dark-terminal
+themed shell used by every email this project sends).
+
+## Uptime Kuma Alert Emails (Gmail App Password)
+
+Completely separate system: [Uptime Kuma](/docs/services/uptime-kuma)
+sends its own down/up alert emails via a dedicated Gmail account
+authenticated with an App Password (not the account's real password), with
+custom Liquid-templated HTML and inline CSS for a more polished look than
+Kuma's plaintext default. This has no relationship to Resend or the
+playground's queue — it's Kuma's own, independent alerting path for
+lab-infrastructure monitoring, not visitor-facing notifications.
+
+## External Dependencies Summary
+
+- **Resend** — playground outage/recovery + feedback emails, `jaysynclab.com`-verified sender.
+- **Vercel KV / Upstash Redis** — the outage-recovery queue's storage.
+- **Gmail (App Password)** — Uptime Kuma's alert emails, unrelated to Resend.

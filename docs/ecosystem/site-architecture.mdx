@@ -1,0 +1,64 @@
+---
+title: "Site Architecture"
+description: "How jaysync-lab-site is built, and how it turns this repo's content into a live site."
+status: published
+icon: "LayoutTemplate"
+---
+
+> [jaysync-lab-site](https://github.com/JaySync-Lab/jaysync-lab-site) is
+> the Next.js site publishing everything in this repo's `/docs` and
+> `infrastructure/inventory.yaml`. This repo owns none of the site's own
+> code — it owns the content the site renders.
+
+## Tech Stack
+
+Next.js 15 (App Router) · React 19 · TypeScript · Fumadocs 14 (the MDX
+docs engine powering `/docs`) · Tailwind CSS 4 · Motion (animation) ·
+`js-yaml` (parses `inventory.yaml`) · Vercel hosting.
+
+## Data Flow
+
+`infrastructure/inventory.yaml` is the single source of truth for
+everything the site renders that isn't prose: the homepage's topology
+diagram and live-services rack, `/architecture`'s topology + VMID band
+diagram, and `/services`'s catalogue. A single `getInventory()` function
+(`src/lib/inventory.ts` in the site repo) parses it once per build/request;
+every page-level component reads from that, never from a second
+hand-maintained copy — `inventory.yaml` used to be duplicated inside the
+site repo and silently went stale, which is exactly the failure mode this
+single-source setup exists to prevent.
+
+## The Publishing Pipeline
+
+```
+push to docs/** or infrastructure/inventory.yaml on this repo's main
+  → validate-and-dispatch.yml runs node scripts/validate-docs.mjs
+    (frontmatter + meta.json check — Gate One)
+  → on success, notifies jaysync-lab-site via repository_dispatch
+  → jaysync-lab-site's rebuild-from-docs.yml pulls docs/ + inventory.yaml
+  → pre-flight `npm run build` (Gate Two) — a broken inventory.yaml or a
+    site build failure stops here, nothing is committed
+  → commits the synced content, Vercel auto-deploys
+```
+
+Either gate failing means the live site simply keeps showing its last
+working version — it can never end up broken or stale-but-wrong, only a
+few minutes behind while a mistake gets fixed.
+
+## Draft/Published
+
+Any page with `status: draft` in its frontmatter passes Gate One but is
+excluded from what the site actually builds — this is how a page gets
+written and committed incrementally over several sessions without ever
+accidentally going live half-finished.
+
+## Live Data On The Site
+
+Not everything the site shows comes from `inventory.yaml` at build time —
+some of it is genuinely live. The system status feature
+([`StatusBadge`](/docs/services/uptime-kuma), the homepage's aggregate
+badge, and the `/status` page) fetches Uptime Kuma's public status-page
+API directly from the visitor's browser, with no backend proxy in
+between — the same pattern this repo's `RULEBOOK.md` calls out as the
+publishing pipeline's opposite: build-time content vs. request-time live
+data, both intentional, used for different things.

@@ -1,0 +1,74 @@
+---
+title: "Domain & DNS Architecture"
+description: "Which jaysynclab.com subdomains go through Vercel, Cloudflare Tunnel, or the reverse proxy — and why."
+status: published
+icon: "Globe"
+---
+
+> `jaysynclab.com` and its subdomains don't all reach the lab the same
+> way. This page is the single place that lays out which path each one
+> takes, since the individual pieces are otherwise scattered across
+> several other pages.
+
+## The Four Paths
+
+| Hostname | Path | Notes |
+| :--- | :--- | :--- |
+| `jaysynclab.com` / `www.jaysynclab.com` | Vercel | The docs site itself |
+| `jslnode.jaysynclab.com` | Vercel | Playground frontend |
+| `api-jslnode.jaysynclab.com` | Cloudflare Tunnel → CT 105 | Playground's FastAPI controller — **not** Vercel-hosted, a direct tunnel straight into the homelab |
+| `*.lab.jaysynclab.com` | Nginx Proxy Manager (LAN) | Every internal service's friendly URL — never has a public DNS record |
+
+## Vercel-Hosted (public internet, no lab dependency)
+
+`jaysynclab.com` and `jslnode.jaysynclab.com` are both static/serverless
+deployments on Vercel — they stay up regardless of whether the homelab
+itself is reachable. `jslnode.jaysynclab.com`'s frontend calls
+`api-jslnode.jaysynclab.com` for anything that needs the actual lab (spinning
+up a playground session), so the frontend loading successfully doesn't
+guarantee the backend is reachable — that's a separate, real failure mode
+the frontend's own offline-state UI handles.
+
+## Cloudflare Tunnel (public internet, lab-dependent)
+
+`api-jslnode.jaysynclab.com` is the one hostname that's both public and
+genuinely served from inside the lab. `cloudflared` runs on CT 105 and
+tunnels the hostname straight to `http://localhost:8000` (the playground
+controller) — no port-forwarding, no public IP exposure on the router
+itself. See [Playground Architecture](/docs/ecosystem/playground-architecture)
+for the controller side of this.
+
+## Reverse Proxy (LAN + Tailscale only, never public)
+
+Every `*.lab.jaysynclab.com` hostname (`pihole.lab`, `kuma.lab`, `ha.lab`,
+`grafana.lab`, `proxmox.lab`, `dashboard.lab`) resolves only through
+Pi-hole, and only to Nginx Proxy Manager's internal IP
+(`192.168.1.106`) — there is no public DNS record for any of them,
+by design. Two ways to actually resolve one:
+
+1. **On the home LAN:** Pi-hole serves the wildcard record directly (see
+   [Pi-hole](/docs/services/pi-hole)).
+2. **Off the home LAN, over Tailscale:** the tailnet's admin console has a
+   split-DNS nameserver entry restricted to `lab.jaysynclab.com`, pointing
+   at Pi-hole — so these hostnames resolve identically on-VLAN and
+   off-VLAN via Tailscale, without overriding all other DNS on the remote
+   device. Without Tailscale connected, these hostnames simply don't
+   resolve anywhere (correctly — they were never meant to be public).
+
+All of them share one wildcard Let's Encrypt certificate, issued via
+Cloudflare's DNS-01 challenge — no public HTTP challenge needed, so the
+cert works even though the hostnames themselves are never publicly
+resolvable.
+
+## Domain Migration History
+
+The ecosystem originally lived on subdomains of `anujajay.com`
+(`lab.anujajay.com`, `jslnode.anujajay.com`, `api-jslnode.anujajay.com`) —
+a separate personal domain also used for unrelated projects. `jaysynclab.com`
+was purchased and migrated to on 2026-07-16 to give the lab its own
+identity. The old domains still 308-redirect to their `jaysynclab.com`
+equivalents rather than being removed outright, so old bookmarks/links keep
+working. `anujajay.com` itself is untouched and unrelated to this
+ecosystem going forward — it's the personal portfolio domain, intentionally
+excluded from this migration (e.g. the playground's footer credit link and
+its transactional-email footer both still point there deliberately).
