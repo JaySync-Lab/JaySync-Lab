@@ -15,6 +15,12 @@ doesn't apply, say so explicitly (e.g. media-stack's "External
 Dependencies: None." section) — a reader should be able to tell the
 category was considered, not skipped by accident.
 
+This applies to pages documenting a specific running service or piece of
+infrastructure — not to `docs/ecosystem/`'s architecture/topic overviews
+(e.g. "Site Architecture", "Domain & DNS Architecture"), which explain how
+several pieces fit together rather than describe one deployable thing, and
+follow their own topic-appropriate structure instead.
+
 ### 1. Full resource + config specs
 
 CPU/RAM/disk/network allocation, container/VM flags that matter (e.g.
