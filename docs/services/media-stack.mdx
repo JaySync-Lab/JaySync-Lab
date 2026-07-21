@@ -12,9 +12,9 @@ icon: "Film"
 
 ## Deployment Strategy
 
-A dedicated LXC container running Docker was chosen over individual VMs per
-service to consolidate resource usage while maintaining service isolation
-through Docker Compose orchestration.
+A dedicated LXC container running Docker was chosen over individual VMs
+per service, to consolidate resource usage while keeping service isolation
+through Docker Compose.
 
 **Container Specs:**
 - **Container ID:** 104
@@ -23,14 +23,14 @@ through Docker Compose orchestration.
 - **Swap:** 2048MB
 - **Root Disk:** 35GB on `local-lvm`
 - **Features:** `nesting=1` (required for Docker-in-LXC)
-- **Network:** 192.168.1.104 on vmbr0
+- **Network:** `192.168.1.104` on `vmbr0`
 - **Autostart:** `onboot=1`
 
 ## GPU Passthrough (Hardware Transcoding)
 
 > The Intel HD Graphics 530 iGPU is passed through from the Proxmox host
-> into this container to enable hardware-accelerated video transcoding
-> (Quick Sync Video). This avoids CPU-bound transcoding bottlenecks.
+> into this container for hardware-accelerated video transcoding (Quick
+> Sync Video), avoiding CPU-bound transcoding bottlenecks.
 
 **LXC Configuration:**
 ```
@@ -40,7 +40,7 @@ lxc.mount.entry: /dev/dri dev/dri none bind,optional,create=dir
 ```
 
 Device `226:0` is the DRM render node and `226:128` is the card node,
-giving the container full access to the GPU for media transcoding.
+giving the container full GPU access for transcoding.
 
 ## Storage Architecture
 
@@ -50,14 +50,44 @@ The Vault HDD (1TB) is bind-mounted into the container for media storage:
 mp0: /mnt/pve/vault/data,mp=/data
 ```
 
-This separates the media library (large, slow-tier storage) from the
-application data (fast SSD-backed root disk), ensuring the container root
-doesn't fill up with media files.
+This keeps the media library (large, slow-tier storage) separate from
+application data (fast SSD-backed root disk), so the container root never
+fills up with media files.
 
 ## Docker Services
 
-The container runs multiple Docker services via overlay networking. A
-total of 6 containers are active.
+Six containers run via Docker Compose with overlay networking:
+
+- **jellyfin** — media server, the actual streaming frontend
+- **sonarr** — TV show library management/automation
+- **radarr** — movie library management/automation
+- **prowlarr** — indexer manager feeding Sonarr/Radarr
+- **qbittorrent** — download client
+- **flaresolverr** — solves Cloudflare challenges some indexers present,
+  so Prowlarr can query them successfully
 
 > To inspect the running services:
 > `pct exec 104 -- docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"`
+
+## External Dependencies
+
+None. Every service here is self-hosted with no cloud account, API key, or
+external tunnel involved — indexers/trackers are queried directly, not
+through a managed third-party service.
+
+## Access & Security
+
+Deliberately **not** behind the reverse proxy and **not** resolvable via
+Tailscale split-DNS or any `*.lab.jaysynclab.com` hostname — both
+exclusions are intentional, not oversights. Reachable only via direct LAN
+IP:port from inside the home network (e.g. `192.168.1.104:8096` for
+Jellyfin). No off-VLAN access exists for this stack by design.
+
+## Operational Notes
+
+- No automated backup configured for application config (Sonarr/Radarr/
+  Prowlarr/qBittorrent settings) — only the media library itself lives on
+  the more durable Vault HDD; app config lives on the root disk with the
+  rest of the container.
+- **Health check:** `docker ps` (see command above) — all six should show
+  `Up`, not `Restarting` or `Exited`.
