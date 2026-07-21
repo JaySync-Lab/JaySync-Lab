@@ -75,7 +75,7 @@ function validateMdx(filePath) {
 
   const frontmatter = {};
   for (const line of match[1].split('\n')) {
-    const kv = line.match(/^(\w+):\s*(.*)$/);
+    const kv = line.replace(/\r$/, '').match(/^(\w+):\s*(.*)$/);
     if (kv) {
       let value = kv[2].trim();
       // strip surrounding quotes if present
