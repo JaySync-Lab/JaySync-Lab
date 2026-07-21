@@ -5,15 +5,15 @@ status: published
 icon: "Home"
 ---
 
-Central command for the smart home environment.
+> Central command for the smart home environment. Runs as a full virtual
+> machine (HAOS), not a container — chosen specifically for Supervisor's
+> add-on management and snapshot-based backups.
 
 ## Deployment Strategy
 
-> **VM over Docker Decision:** We opted for a full virtual machine
-> deployment (HAOS) rather than a Docker container. This allows us to
-> leverage Supervisor for simple add-on management and robust
-> snapshot-based backups without needing complex standalone container
-> orchestration.
+> **VM over Docker Decision:** a full VM (HAOS) was chosen over a Docker
+> container to get Supervisor's add-on management and snapshot-based
+> backups without building standalone container orchestration by hand.
 
 **VM Configuration (ID: 103):**
 - **Machine Type:** Q35 with OVMF (UEFI) BIOS
@@ -21,16 +21,61 @@ Central command for the smart home environment.
 - **Memory:** 2048MB RAM
 - **Boot Disk:** 32GB SCSI (virtio-scsi-single, iothread enabled)
 - **EFI Disk:** 4MB on `local-lvm`
-- **Network:** VirtIO NIC on vmbr0, firewall enabled
+- **Network:** VirtIO NIC on `vmbr0`, firewall enabled
 - **Autostart:** `onboot=1`
 
-## EZVIZ RTSP Integration Logic
+## External Dependencies
 
-To securely integrate EZVIZ camera feeds directly into Home Assistant:
+- **EZVIZ cameras/NVR (in progress, as of 2026-07-21):** an EZVIZ H9C
+  dual-lens camera and an EZVIZ X5 8-channel NVR are being integrated via
+  local RTSP/ONVIF — deliberately chosen over the official EZVIZ cloud
+  integration to avoid a cloud-account dependency and the extra latency of
+  round-tripping every stream request through EZVIZ's servers. The NVR
+  exposes each channel over RTSP directly on the LAN; Home Assistant polls
+  the stream locally, so camera access keeps working even if the internet
+  connection drops. Not yet complete — this page will be updated once
+  channels are wired in and verified.
+- No Cloudflare Tunnel, no other cloud service integration.
 
-1. **Local Access:** Enabled the RTSP stream locally via the EZVIZ app.
-2. **Integration:** Brought the feed into Home Assistant using internal LAN
-   credentials.
-3. **Local Polling Loop:** The network continuously polls the local stream
-   directly, establishing a fully local loop that functions even if the
-   external internet connection drops.
+## Access & Security
+
+- **LAN:** direct IP, `http://192.168.1.12:8123`. (Note: this IP was
+  previously mis-documented as `192.168.1.11` — a real drift between the
+  docs and the actual assigned address, found via a peer container failing
+  to reach `.11` and confirmed live at `.12` via the Proxmox console. Fixed
+  in both this page and `infrastructure/inventory.yaml`; worth
+  double-checking against the Proxmox console directly if this ever looks
+  wrong again, since HA's VM has no guest agent to report its IP
+  automatically.)
+- **Reverse proxy:** `https://ha.lab.jaysynclab.com` via Nginx Proxy
+  Manager, wildcard TLS.
+- **Recurring gotcha — reverse-proxy trust config lost twice:** Home
+  Assistant rejects requests from a reverse proxy it doesn't explicitly
+  trust (400 Bad Request) unless `configuration.yaml` has:
+  ```yaml
+  http:
+    use_x_forwarded_for: true
+    trusted_proxies:
+      - 192.168.1.106
+  ```
+  This was first added 2026-07-16, found completely missing again on
+  2026-07-19 (likely wiped by a HA update or a config reset), and re-added.
+  If `ha.lab.jaysynclab.com` ever returns a real `400` while direct-IP
+  access still works fine, check this block first before assuming a
+  network problem.
+- **Known open issue:** unreachable off-VLAN over Tailscale even by direct
+  IP, unlike every other host on the subnet
+  ([JaySync-Lab#10](https://github.com/JaySync-Lab/JaySync-Lab/issues/10)).
+  Lead: the VM's per-guest Proxmox firewall flag, not yet confirmed as the
+  actual cause. Parked until physically on the home VLAN to inspect the
+  firewall rules directly in the Proxmox UI.
+
+## Operational Notes
+
+- **Backups:** HAOS Supervisor's built-in snapshot feature — the whole
+  reason a VM was chosen over a container.
+- **Health check:** the HA UI itself, or `ha core info` via the
+  Supervisor's Terminal & SSH add-on.
+- **Config editing without SSH:** HAOS doesn't expose SSH by default. Use
+  the Supervisor's **Terminal & SSH** and **File editor** add-ons from the
+  HA sidebar for direct config access.
