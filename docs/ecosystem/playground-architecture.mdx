@@ -1,0 +1,95 @@
+---
+title: "Playground Architecture"
+description: "The disposable-terminal playground: session model, network isolation, and how it's actually deployed."
+status: published
+icon: "TerminalSquare"
+---
+
+> [jslnode.jaysynclab.com](https://jslnode.jaysynclab.com) gives every
+> visitor a real, isolated Linux terminal session — spun up on demand,
+> destroyed when they're done. This page covers the architecture; see
+> [Domain & DNS Architecture](/docs/ecosystem/domain-dns-architecture) for
+> how traffic actually reaches it.
+
+## Two Deployments, Two Deploy Models
+
+The frontend (`web/` in
+[jaysync-lab-playground](https://github.com/JaySync-Lab/jaysync-lab-playground))
+and the backend (`controller/`) are genuinely separate deployables with
+different deploy models — worth stating plainly rather than assuming both
+work the same way:
+
+- **Frontend:** Next.js on Vercel. Deploys automatically on every push to
+  `main` — real CI/CD.
+- **Backend:** FastAPI on CT 105, a manually-deployed `systemd` service
+  (`playground-controller.service`). No CI/CD — a change to
+  `controller/` requires manually copying the file(s) to the container and
+  restarting the service. This is a deliberate current state, not an
+  oversight; automating it is unscheduled future work.
+
+## Session Model
+
+Every session is a fast linked clone of CT 180
+(`sandbox-template-playground`, the golden template) — a pre-built,
+pre-hardened Debian container with the visitor experience (guided tour,
+resource caps, fork-bomb protection) already baked in. Cloning from a
+template rather than building from scratch is what makes a session start
+in seconds instead of minutes.
+
+**Limits:** 3 concurrent sessions maximum, 15 minutes per session, 1
+session per visitor (by source IP) at a time.
+
+**Cleanup:** a background reaper checks the real state of running clones
+on a timer and destroys anything overstayed, independent of the
+controller's own bookkeeping — so an orphaned clone gets cleaned up even
+after a controller crash or restart.
+
+## Network Isolation
+
+CT 105 is deliberately dual-homed — the one chokepoint between two
+networks that otherwise never touch:
+
+- `net0` on `vmbr0` (the LAN) — receives requests from the frontend/tunnel.
+- `net1` on `vmbr_sandbox` — an isolated network segment with no route to
+  the LAN or the internet, reaching each session clone's terminal to proxy
+  it back to the visitor's browser.
+
+Session clones themselves have zero network access beyond this one proxy
+path, by design.
+
+## Startup Notification
+
+An `ExecStartPost` hook (`notify-host-online.sh`) fires the instant the
+controller service itself starts, POSTing to the frontend's
+`/api/host-online` — a hint, not proof: that endpoint never trusts the
+ping and always does its own real health check through the actual public
+tunnel before sending any outage-recovery email (see
+[Email & Notifications](/docs/ecosystem/email-notifications)). This exists
+specifically so a recovery email goes out immediately on a host reboot,
+rather than waiting for the once-a-day cron fallback.
+
+## Known Gotcha: CORS drift after a domain migration
+
+The controller's CORS `allow_origins` has to match the frontend's actual
+origin exactly. During the `jaysynclab.com` domain migration, this was
+missed — the controller kept allowing only the old
+`https://jslnode.anujajay.com` origin, since it lives on a manually
+deployed script the migration's Vercel/Cloudflare-Tunnel sweep never
+touched. Every real browser request was silently CORS-blocked (curl
+doesn't enforce CORS, so every direct `curl` health check during the
+migration looked completely fine) — the frontend showed "offline"
+regardless of actual backend health until this was caught by checking for
+a missing `Access-Control-Allow-Origin` header specifically. Worth
+checking first, specifically, the next time the frontend shows "offline"
+despite the backend clearly being up.
+
+## External Dependencies
+
+- **Cloudflare Tunnel** — see
+  [Domain & DNS Architecture](/docs/ecosystem/domain-dns-architecture).
+- **Proxmox API** — the controller uses `proxmoxer` to clone/start/destroy
+  session containers; runs with whatever Proxmox credential the controller
+  itself is configured with (not `claude-agent`'s separate, more narrowly
+  scoped SSH access).
+- No email service directly — that's the frontend's responsibility, see
+  [Email & Notifications](/docs/ecosystem/email-notifications).
