@@ -3,7 +3,9 @@
 This file is the howto for adding or editing content under `/docs`. It
 covers frontmatter, folder structure, the draft/published workflow, and
 what happens after you push. It does **not** cover repository navigation
-or infrastructure — see [`MAINTENANCE.md`](./MAINTENANCE.md) for that.
+or infrastructure — see [`MAINTENANCE.md`](./MAINTENANCE.md) for that —
+and it does **not** cover what a page must actually say to be complete —
+see [`CONTENT-GUIDE.md`](./CONTENT-GUIDE.md) for that.
 
 If you're reading this after months away from the project: start here,
 follow it step by step, and you should be able to add a page without
