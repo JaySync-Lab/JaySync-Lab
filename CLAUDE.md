@@ -47,13 +47,17 @@ impossible, not just fixed once.
 
 1. **[`RULEBOOK.md`](RULEBOOK.md)** — how to author docs, how the
    `template:` inventory flag works, the whole publishing contract
-2. **[`MAINTENANCE.md`](MAINTENANCE.md)** — directory legend, IP allocation
+2. **[`CONTENT-GUIDE.md`](CONTENT-GUIDE.md)** — the four things every
+   service/infrastructure page must cover (resource specs, named external
+   dependencies, operational details, access & security), so depth
+   doesn't drift thin again
+3. **[`MAINTENANCE.md`](MAINTENANCE.md)** — directory legend, IP allocation
    map, update procedures
-3. **[`CHANGELOG.md`](CHANGELOG.md)** — terse, technical, dated. What
+4. **[`CHANGELOG.md`](CHANGELOG.md)** — terse, technical, dated. What
    actually happened, newest first
-4. **[`docs/changelog.mdx`](docs/changelog.mdx)** — the same history,
+5. **[`docs/changelog.mdx`](docs/changelog.mdx)** — the same history,
    reader-facing prose, live at [jaysynclab.com/docs/changelog](https://jaysynclab.com/docs/changelog)
-5. **[`infrastructure/inventory.yaml`](infrastructure/inventory.yaml)** —
+6. **[`infrastructure/inventory.yaml`](infrastructure/inventory.yaml)** —
    the actual structured data (hosts, services, VMID bands). Has a header
    comment stating it's a source of truth — read that before editing
 
