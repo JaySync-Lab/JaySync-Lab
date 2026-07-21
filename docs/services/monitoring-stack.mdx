@@ -55,6 +55,14 @@ Reachable directly at `192.168.1.120:3000` (Grafana) and
 [reverse proxy](/docs/networking/reverse-proxy) — works both on the
 home VLAN and remotely over Tailscale.
 
+## Grafana Login
+
+Grafana's admin account is a real login, set directly by the project
+owner — not automated, not provisioned via the `pve-exporter` API token
+above (that token only feeds the Proxmox data source; it has no relation
+to Grafana's own user accounts). Rotating it is a manual step in Grafana's
+own UI, deliberately not something automation touches.
+
 ## Known gotchas (for next time)
 
 - Proxmox reserves the `PVE`-prefixed namespace for role IDs — naming a
