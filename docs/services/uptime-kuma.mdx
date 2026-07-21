@@ -6,8 +6,10 @@ icon: "Activity"
 ---
 
 > Uptime Kuma runs as an unprivileged LXC container (ID: 101) on the
-> Proxmox host. It acts as the central "Watchman", polling core services
-> every 60 seconds and dispatching automated HTML alerts upon failure.
+> Proxmox host — a native Node.js install, not Docker. It's the lab's
+> "is it up?" layer: synthetic checks every 60 seconds, HTML alert emails
+> on failure, and the public status-page API the live docs site reads
+> from directly for real-time service dots.
 
 ## Deployment & Scope
 
@@ -18,25 +20,52 @@ icon: "Activity"
 - **Swap:** 512MB
 - **Root Disk:** 4GB on `local-lvm`
 - **Features:** `nesting=1,keyctl=1`
-- **Network:** 192.168.1.102 on vmbr0
-- **Timezone:** Asia/Colombo
+- **Network:** `192.168.1.102` on `vmbr0`
+- **Timezone:** `Asia/Colombo`
 - **Tags:** `analytics`, `community-script`, `monitoring`
 - **Autostart:** `onboot=1`
 
 **Monitored Targets:**
-- **Hardware/Gateway:** ZTE Router (192.168.1.1)
-- **External DNS:** Cloudflare (1.1.1.1) to verify ISP connectivity.
-- **Hypervisor:** Proxmox Host GUI (https://192.168.1.100:8006).
-- **Internal DNS:** Pi-hole (192.168.1.101 resolving local queries).
+- **Hardware/Gateway:** ZTE Router (`192.168.1.1`)
+- **External DNS:** Cloudflare (`1.1.1.1`), to verify ISP connectivity
+- **Hypervisor:** Proxmox Host GUI (`https://192.168.1.100:8006`)
+- **Internal DNS:** Pi-hole (`192.168.1.101`)
 
-## Alerting Strategy & UI Customization
+Complements, not replaces, the [monitoring stack](/docs/services/monitoring-stack):
+Kuma answers "is it up?" with a synthetic check; Prometheus/Grafana answer
+"how's it trending?" with real resource metrics over time.
 
-Standard plaintext emails were insufficient. A dedicated system Gmail
-account was configured using App Passwords to handle outbound alerts
-securely.
+## External Dependencies
 
-To provide a refined experience, custom Liquid templating
-(`{% if status == 'up' %}`) and inline CSS were used to create responsive,
-professional alert cards. The raw code for the email body and the status
-page CSS are strictly stored in the `/templates` directory of the
-repository for easy automation.
+- **Gmail (SMTP + App Password):** a dedicated system Gmail account sends
+  outbound alert emails. Standard plaintext alerts were insufficient, so
+  custom Liquid templating (`{% if status == 'up' %}`) and inline CSS
+  produce responsive, professional-looking alert cards instead — the raw
+  template/CSS source lives in this repo's `/templates` directory.
+- No Cloudflare Tunnel, no other external API.
+
+## Access & Security
+
+- **LAN:** direct IP, `http://192.168.1.102:3001`.
+- **Reverse proxy:** `https://kuma.lab.jaysynclab.com` via Nginx Proxy
+  Manager, wildcard TLS.
+- **Off-VLAN:** reachable via Tailscale split-DNS, same as every other
+  `*.lab.jaysynclab.com` host — confirmed working from a real off-VLAN
+  device. (If it's ever unreachable off-VLAN, check that Tailscale is
+  actually connected on the client first — split-DNS resolution only
+  works while the tailnet connection is active.)
+- **Public status-page API:** deliberately public (no auth), by design —
+  [jaysync-lab-site](/docs/ecosystem/site-architecture) reads
+  `/api/status-page/default` and `/api/status-page/heartbeat/default`
+  directly from the browser to render live per-service status dots and an
+  aggregate "N/M services up" indicator, with no backend proxy in between.
+
+## Operational Notes
+
+- **Health check:** the dashboard itself shows each monitor's live
+  heartbeat; `systemctl status` won't show a unit named `kuma` — check
+  the running Node process directly if the web UI itself is unreachable.
+- No automated backup configured for `/opt/uptime-kuma`'s SQLite database
+  (monitor definitions, history) — losing it means re-adding every monitor
+  by hand from this page's "Monitored Targets" list (plus whatever's been
+  added since).

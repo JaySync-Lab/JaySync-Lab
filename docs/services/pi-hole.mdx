@@ -6,14 +6,15 @@ icon: "ShieldCheck"
 ---
 
 > Pi-hole runs as an unprivileged LXC container (ID: 100) directly on the
-> Proxmox host. It serves as the primary, network-wide DNS resolver and
-> ad-blocker for the internal 192.168.1.x subnet.
+> Proxmox host. It's the network-wide DNS resolver and ad-blocker for the
+> `192.168.1.0/24` LAN, and the authoritative resolver for every
+> `*.lab.jaysynclab.com` hostname the [reverse proxy](/docs/networking/reverse-proxy)
+> serves.
 
 ## Deployment Strategy
 
-The container was provisioned utilizing the Proxmox VE Helper-Scripts to
-ensure a lean, optimized Debian environment without the overhead of a full
-virtual machine.
+Provisioned via the Proxmox VE Helper-Scripts, for a lean, optimized
+Debian environment without the overhead of a full virtual machine.
 
 - **Container Type:** LXC (Unprivileged)
 - **Container ID:** 100
@@ -22,19 +23,78 @@ virtual machine.
 - **Swap:** 512MB
 - **Root Disk:** 4GB on `local-lvm`
 - **Features:** `nesting=1`
-- **Network:** Static IP assigned as 192.168.1.101 on vmbr0
+- **Network:** Static IP `192.168.1.101` on `vmbr0`
 - **Firewall:** Enabled
 - **Autostart:** `onboot=1`
 
 ## Network Role & Traffic Flow
 
-- **Upstream Resolution:** Permitted DNS queries are securely forwarded to
-  Cloudflare (1.1.1.1) and Google (8.8.8.8).
-- **DHCP Integration:** The primary hardware gateway (ZTE Router at
-  192.168.1.1) has its DHCP settings configured to broadcast 192.168.1.101
-  as the primary DNS server to all connected LAN clients.
-- **Local DNS Records:** This instance acts as the authoritative resolver
-  for internal lab routing (e.g., mapping `.local` or custom domain names
-  directly to internal container IPs).
+- **Upstream Resolution:** permitted DNS queries are forwarded to Cloudflare
+  (`1.1.1.1`) and Google (`8.8.8.8`).
+- **DHCP Integration:** the ZTE router's DHCP settings broadcast
+  `192.168.1.101` as the primary DNS server to every LAN client.
+- **Local DNS Records:** authoritative resolver for `*.lab.jaysynclab.com`,
+  mapping every reverse-proxy hostname to the Nginx Proxy Manager
+  container's IP.
 
-Built With automation
+## A real gap, found and fixed 2026-07-18
+
+The DHCP integration above wasn't actually configured correctly until this
+date — the router had never been set up to hand out Pi-hole as the LAN's
+DNS server at all. Every device on the network was using the router itself
+for DNS, meaning Pi-hole's ad-blocking and local-DNS resolution were
+silently inactive network-wide, not just for the newer `*.lab.jaysynclab.com`
+domains. Found via `nslookup` returning `NXDOMAIN` against the router but
+resolving correctly against Pi-hole directly.
+
+Fixing it took two parts:
+1. The router's DHCP DNS field pointed at `192.168.1.101`.
+2. The router was *also* advertising itself as an IPv6 DNS server via
+   Router Advertisements, which most OSes (Windows included) prefer over
+   IPv4 DNS — this silently undid part of fix #1 for any client with IPv6
+   enabled. Fixed by disabling IPv6 on the router's LAN side (required a
+   router reboot to fully apply).
+
+## Wildcard DNS Configuration
+
+Pi-hole v6/FTL v6.6 no longer reads `/etc/dnsmasq.d/*.conf` for custom DNS
+entries — that convention changed. The wildcard record for
+`*.lab.jaysynclab.com` is set via `misc.dnsmasq_lines` in
+`/etc/pihole/pihole.toml` instead:
+
+```toml
+[misc]
+dnsmasq_lines = [
+  "address=/lab.jaysynclab.com/192.168.1.106"
+]
+```
+
+## External Dependencies
+
+- **Upstream DNS**: Cloudflare (`1.1.1.1`), Google (`8.8.8.8`) — public
+  resolvers, no account or auth involved.
+- No Cloudflare Tunnel, no email service, no other external API — Pi-hole
+  has no outbound integrations beyond the two upstream resolvers above.
+
+## Access & Security
+
+- **LAN:** direct IP, `http://192.168.1.101` (admin UI on port 80).
+- **Reverse proxy:** `https://pihole.lab.jaysynclab.com` via Nginx Proxy
+  Manager, using the same wildcard TLS cert as every other
+  `*.lab.jaysynclab.com` host.
+- **Off-VLAN:** reachable via Tailscale split-DNS — the tailnet's DNS
+  settings restrict `lab.jaysynclab.com` resolution to Pi-hole, without
+  overriding all other DNS on the remote device.
+- **Homepage dashboard widget:** authenticates via an app password
+  (Settings → Web interface/API → Expert → Configure app password) — the
+  Pi-hole v6 API's supported auth method for third-party integrations, not
+  the admin UI's own login password.
+
+## Operational Notes
+
+- No automated backup is currently configured. If lost, the container
+  would need to be rebuilt from this page plus
+  [`infrastructure/inventory.yaml`](https://github.com/JaySync-Lab/JaySync-Lab/blob/main/infrastructure/inventory.yaml)
+  (IP, resource specs) and the wildcard-DNS config above.
+- **Health check:** the admin UI's `Settings → System` panel shows FTL's
+  live status, or run `pihole status` from the container's own shell.
